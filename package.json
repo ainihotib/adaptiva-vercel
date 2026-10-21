@@ -1,0 +1,13 @@
+{
+  "name": "adaptiva-vercel",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend ADAPTIVA (REST API) di Vercel — data tetap di Google Sheets, login via Google OAuth 2.0",
+  "dependencies": {
+    "google-auth-library": "^9.14.1",
+    "googleapis": "^144.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "xlsx": "^0.18.5",
+    "mammoth": "^1.8.0"
+  }
+}
