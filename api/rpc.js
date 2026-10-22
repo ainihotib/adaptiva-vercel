@@ -48,6 +48,19 @@ async function getDaftarAkun(sessionToken) {
   return ok(data);
 }
 
+// Dipakai guru (siapa saja yang login) untuk mengisi dropdown pilih
+// Kepala Sekolah/Pengawas saat mengajukan validasi Modul Ajar — beda dari
+// getDaftarAkun yang khusus Admin/Superadmin dan mengembalikan semua akun
+// (termasuk PasswordHash).
+async function getDaftarValidator(sessionToken) {
+  await auth.requireRole(sessionToken, null);
+  const data = await sheets.getAllData('Users');
+  const kepsekList = data
+    .filter(u => u.Peran === 'KepalaSekolah' && u.Status === 'Aktif')
+    .map(u => ({ Email: u.Email, Nama: u.Nama, Sekolah: u.Sekolah }));
+  return ok(kepsekList);
+}
+
 async function ubahStatusAkun(sessionToken, [id, status]) {
   await auth.requireRole(sessionToken, [auth.ROLE.SUPERADMIN, auth.ROLE.ADMIN]);
   const existing = await sheets.findOne('Users', 'ID', id);
@@ -111,7 +124,7 @@ const FN_REGISTRY = {
   loginWithGoogle: async (token, [idToken]) => auth.loginWithGoogle(idToken),
   getCurrentUserProfile: async (token) => auth.getCurrentUserProfile(token),
   setPeranPreview: async (token, [roleBaru]) => ok(await auth.setPeranPreview(token, roleBaru)),
-  daftarkanAkun, getDaftarAkun, ubahStatusAkun,
+  daftarkanAkun, getDaftarAkun, ubahStatusAkun, getDaftarValidator,
   getKelasSaya, simpanKelas, hapusKelas,
   getSiswaByKelas, simpanSiswa, hapusSiswa,
   buatAsesmen: asesmen.buatAsesmen,
@@ -128,6 +141,7 @@ const FN_REGISTRY = {
   submitPublicResponse: asesmen.submitPublicResponse,
   recomputeSemuaProfilSiswa: asesmen.recomputeSemuaProfilSiswa,
   getHasilAsesmen: asesmen.getHasilAsesmen,
+  getAllProfilSiswa: asesmen.getAllProfilSiswa,
   generateKelompokBelajar: kelompok.generateKelompokBelajar,
   getKelompokBelajar: kelompok.getKelompokBelajar,
   pindahkanSiswaKelompok: kelompok.pindahkanSiswaKelompok,
@@ -150,6 +164,7 @@ const FN_REGISTRY = {
   prosesValidasi: modulajar.prosesValidasi,
   kelolaBankStrategi: modulajar.kelolaBankStrategi,
   hapusBankStrategi: modulajar.hapusBankStrategi,
+  getBankStrategi: modulajar.getBankStrategi,
   importSiswaExcel: importLib.importSiswaExcel,
   importSiswaWord: importLib.importSiswaWord,
   importAsesmenExcel: importLib.importAsesmenExcel,
