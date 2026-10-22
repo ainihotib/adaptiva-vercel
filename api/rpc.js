@@ -131,6 +131,7 @@ const FN_REGISTRY = {
   tambahSoalAsesmen: asesmen.tambahSoalAsesmen,
   hapusSoalAsesmen: asesmen.hapusSoalAsesmen,
   hapusSemuaSoalAsesmen: asesmen.hapusSemuaSoalAsesmen,
+  hapusAsesmen: asesmen.hapusAsesmen,
   importSoalDariBank: asesmen.importSoalDariBank,
   getMateriBankKognitif: asesmen.getMateriBankKognitif,
   aktifkanAsesmen: asesmen.aktifkanAsesmen,
