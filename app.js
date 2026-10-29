@@ -308,6 +308,18 @@ function esc(str) {
   return (str === null || str === undefined) ? '' : String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+// Aman disisipkan di dalam literal string JS ber-tanda-kutip-satu ('...')
+// yang berada di dalam atribut HTML ber-tanda-kutip-dua (onclick="...").
+function escJsAttr(str) {
+  return (str === null || str === undefined) ? '' : String(str)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;');
+}
+
 function fmtDate(str) { return str || '-'; }
 
 function openModal(title, bodyHtml, footerHtml) {
@@ -1745,7 +1757,7 @@ function renderModulList() {
             ${m.FilePdfUrl ? `<a class="btn btn-sm btn-adaptiva-secondary" href="${m.FilePdfUrl}" target="_blank"><i class="bi bi-download"></i> PDF</a>
               <a class="btn btn-sm btn-adaptiva-secondary" href="${m.FileDocUrl}" target="_blank"><i class="bi bi-file-earmark-word"></i> Word</a>` : ''}
             <button class="btn btn-sm btn-adaptiva-secondary" id="btnUnduh-${m.ID}" onclick="unduhModulAjar('${m.ID}')"><i class="bi bi-file-earmark-arrow-down"></i> ${m.FilePdfUrl ? 'Buat Ulang Dokumen' : 'Unduh Dokumen'}</button>
-            <button class="btn btn-sm text-danger" onclick="hapusModulAjarNow('${m.ID}', ${JSON.stringify(esc(m.Materi))})" title="Hapus Modul Ajar"><i class="bi bi-trash"></i></button>
+            <button class="btn btn-sm text-danger" onclick="hapusModulAjarNow('${m.ID}', '${escJsAttr(m.Materi)}')" title="Hapus Modul Ajar"><i class="bi bi-trash"></i></button>
           </div>
         </div>
         ${m.Status === 'Dikembalikan' && m.CatatanValidasi ? `<div class="alert alert-warning py-2 mb-0 small"><b>Catatan Validator:</b> ${esc(m.CatatanValidasi)}</div>` : ''}
