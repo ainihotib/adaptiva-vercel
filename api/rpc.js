@@ -159,6 +159,7 @@ const FN_REGISTRY = {
   generateModulAjar: modulajar.generateModulAjar,
   simpanEditModulAjar: modulajar.simpanEditModulAjar,
   getModulAjarSaya: modulajar.getModulAjarSaya,
+  hapusModulAjar: modulajar.hapusModulAjar,
   getModulAjarDetail: modulajar.getModulAjarDetail,
   ajukanValidasi: modulajar.ajukanValidasi,
   getModulUntukValidasi: modulajar.getModulUntukValidasi,
