@@ -1,0 +1,199 @@
+/* ============================================================
+   beranda.css — Hero carousel, maskot "Adapti" & tombol WhatsApp
+   untuk halaman muka (landing) ADAPTIVA.
+   ============================================================ */
+
+/* ───────── HERO CAROUSEL ───────── */
+.bh-hero {
+  position: relative; overflow: hidden; color: #fff;
+  background:
+    radial-gradient(900px 420px at 85% -10%, rgba(255,122,0,.22), transparent 60%),
+    radial-gradient(700px 380px at 0% 110%, rgba(0,168,150,.25), transparent 60%),
+    linear-gradient(160deg, #0A1B2E 0%, #0F2942 55%, #13375A 100%);
+  padding: 3.2rem 1.5rem 2.2rem;
+}
+.bh-hero::before { /* kisi halus */
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
+}
+.bh-inner { position: relative; max-width: 1140px; margin: 0 auto; }
+
+.bh-slides { display: grid; }
+.bh-slide {
+  grid-area: 1 / 1; display: grid; grid-template-columns: 1.05fr .95fr; gap: 3rem; align-items: center;
+  opacity: 0; visibility: hidden; transform: translateY(14px);
+  transition: opacity .55s ease, transform .55s ease, visibility 0s linear .55s;
+}
+.bh-slide.is-active {
+  opacity: 1; visibility: visible; transform: none;
+  transition: opacity .55s ease, transform .55s ease, visibility 0s;
+}
+
+.bh-eyebrow {
+  display: inline-flex; align-items: center; gap: .45rem; padding: .38rem .85rem; border-radius: 999px;
+  font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: #7FE3D8; background: rgba(0,168,150,.16); border: 1px solid rgba(127,227,216,.28);
+}
+.bh-text h1 {
+  font-size: clamp(2rem, 4.6vw, 3.1rem); font-weight: 800; letter-spacing: -.02em; line-height: 1.12;
+  margin: 1rem 0 1.1rem; color: #fff;
+}
+.bh-text h1 .accent-word { color: var(--accent); }
+.bh-sub { font-size: 1.02rem; color: #B9C8D9; max-width: 540px; line-height: 1.65; margin-bottom: 1.7rem; }
+.bh-actions { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; }
+.bh-actions .btn-adaptiva-primary { display: inline-flex; align-items: center; gap: .55rem; padding: .85rem 1.7rem; font-size: .95rem; }
+.bh-btn-ghost {
+  display: inline-flex; align-items: center; gap: .5rem; padding: .82rem 1.4rem; border-radius: .75rem;
+  font-weight: 700; font-size: .92rem; color: #fff; text-decoration: none;
+  background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.22); transition: .2s;
+}
+.bh-btn-ghost:hover { background: rgba(255,255,255,.14); color: #fff; }
+.bh-note { margin: 1.1rem 0 0; font-size: .8rem; color: #93A9BF; display: flex; align-items: center; gap: .4rem; }
+.bh-note i { color: #7FE3D8; }
+
+/* kartu visual di sisi kanan */
+.bh-visual { position: relative; }
+.bh-card {
+  position: relative; background: rgba(255,255,255,.07); backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.16); border-radius: 1.5rem; padding: 1.4rem;
+  box-shadow: 0 30px 60px -25px rgba(0,0,0,.6);
+}
+.bh-card-top { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; font-size: .75rem; color: #B9C8D9; }
+.bh-card-top .mock-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.35); }
+.bh-badge {
+  position: absolute; top: -14px; right: -10px; padding: .5rem .95rem; border-radius: .9rem; font-weight: 800;
+  font-size: .78rem; letter-spacing: .02em; color: #fff; transform: rotate(3deg);
+  background: linear-gradient(90deg, var(--accent), #FF9A33); box-shadow: 0 12px 24px -8px rgba(255,122,0,.6);
+}
+.bh-float {
+  position: absolute; left: -18px; bottom: -18px; display: flex; align-items: center; gap: .6rem;
+  padding: .65rem .95rem; border-radius: 1rem; font-size: .78rem; color: #B9C8D9;
+  background: #0E2238; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 16px 30px -12px rgba(0,0,0,.6);
+}
+.bh-float b { display: block; font-size: 1rem; color: #7FE3D8; }
+.bh-float i { color: var(--accent); font-size: 1.2rem; }
+
+.bh-rows { display: flex; flex-direction: column; gap: .6rem; }
+.bh-row {
+  display: flex; align-items: center; gap: .7rem; padding: .7rem .9rem; border-radius: .85rem;
+  background: rgba(255,255,255,.07); font-size: .82rem; font-weight: 600;
+}
+.bh-row > i { color: var(--accent); font-size: 1.05rem; }
+.bh-bar { flex: 1; height: 7px; border-radius: 999px; background: rgba(255,255,255,.14); overflow: hidden; }
+.bh-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), #FFB066); }
+.bh-bar.teal span { background: linear-gradient(90deg, #00A896, #7FE3D8); }
+.bh-statgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .65rem; margin-bottom: .9rem; }
+.bh-stat { background: rgba(255,255,255,.09); border-radius: .9rem; padding: .75rem .5rem; text-align: center; }
+.bh-stat b { display: block; font-size: 1.25rem; font-weight: 800; }
+.bh-stat span { font-size: .66rem; color: #B9C8D9; font-weight: 600; }
+
+.bh-groups { display: grid; gap: .65rem; }
+.bh-group { padding: .8rem .95rem; border-radius: .95rem; background: rgba(255,255,255,.07); border-left: 4px solid var(--accent); }
+.bh-group.g2 { border-left-color: #00A896; }
+.bh-group.g3 { border-left-color: #8AB4F8; }
+.bh-group h6 { margin: 0 0 .45rem; font-size: .82rem; font-weight: 800; color: #fff; }
+.bh-dots-row { display: flex; gap: .3rem; }
+.bh-dots-row i { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.18); display: grid; place-items: center; font-size: .72rem; color: #fff; }
+.bh-group:not(.g2):not(.g3) .bh-dots-row i { background: rgba(255,122,0,.55); }
+.bh-group.g2 .bh-dots-row i { background: rgba(0,168,150,.6); }
+.bh-group.g3 .bh-dots-row i { background: rgba(138,180,248,.55); }
+
+.bh-doc { background: #fff; color: #1E293B; border-radius: 1rem; padding: 1.1rem 1.2rem; }
+.bh-doc h6 { font-size: .85rem; font-weight: 800; color: var(--primary); margin: 0 0 .6rem; }
+.bh-line { height: 8px; border-radius: 999px; background: #E2E8F0; margin: .45rem 0; }
+.bh-line.s { width: 62%; } .bh-line.m { width: 82%; }
+.bh-line.o { background: rgba(255,122,0,.35); width: 48%; }
+.bh-check { display: inline-flex; align-items: center; gap: .4rem; margin-top: .7rem; padding: .35rem .75rem; border-radius: 999px;
+  font-size: .72rem; font-weight: 800; color: #00766A; background: rgba(0,168,150,.12); }
+
+/* kontrol carousel */
+.bh-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 2rem; }
+.bh-dots { display: flex; gap: .5rem; }
+.bh-dot { width: 38px; height: 5px; border: 0; padding: 0; border-radius: 999px; background: rgba(255,255,255,.22); cursor: pointer; transition: .3s; }
+.bh-dot.is-active { background: var(--accent); width: 62px; }
+.bh-arrows { display: flex; gap: .6rem; }
+.bh-arrow {
+  width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,.22); cursor: pointer;
+  background: rgba(255,255,255,.07); color: #fff; display: grid; place-items: center; transition: .2s;
+}
+.bh-arrow:hover { background: var(--accent); border-color: var(--accent); }
+
+/* strip statistik */
+.bh-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1.8rem; padding-top: 1.4rem;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+.bh-stats b { display: block; font-size: 1.55rem; font-weight: 800; color: #7FE3D8; letter-spacing: -.01em; }
+.bh-stats span { font-size: .8rem; color: #A9BBCE; }
+
+/* ───────── MASKOT "ADAPTI" ───────── */
+.adapti {
+  position: fixed; right: 22px; bottom: 92px; z-index: 1500; width: 96px; cursor: pointer; user-select: none;
+  filter: drop-shadow(0 14px 18px rgba(0,0,0,.35)); animation: adapti-float 3.6s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+.adapti svg { width: 100%; height: auto; display: block; overflow: visible; }
+.adapti .adapti-arm { transform-origin: 78px 98px; animation: adapti-wave 2.4s ease-in-out infinite; }
+.adapti .adapti-eyes { animation: adapti-blink 5s infinite; transform-origin: 50px 52px; }
+.adapti.is-jump { animation: adapti-jump .6s ease; }
+.adapti-bubble {
+  position: absolute; right: 78px; bottom: 84px; width: max-content; max-width: 210px; padding: .6rem .85rem;
+  border-radius: 1rem 1rem .25rem 1rem; font-size: .8rem; font-weight: 600; line-height: 1.4; color: #0F2942;
+  background: #fff; box-shadow: 0 12px 28px -10px rgba(0,0,0,.45);
+  opacity: 0; transform: translateY(6px) scale(.96); transform-origin: 100% 100%; pointer-events: none;
+  transition: opacity .35s, transform .35s;
+}
+.adapti-bubble.is-show { opacity: 1; transform: none; }
+.adapti-chip {
+  position: fixed; left: 20px; bottom: 22px; z-index: 1500; display: inline-flex; align-items: center; gap: .45rem;
+  padding: .45rem .85rem; border-radius: 999px; font-size: .78rem; font-weight: 700; color: #0F2942;
+  background: rgba(255,255,255,.95); box-shadow: 0 8px 20px -8px rgba(0,0,0,.4);
+}
+.adapti-chip i { width: 8px; height: 8px; border-radius: 50%; background: #22C55E; box-shadow: 0 0 0 4px rgba(34,197,94,.22); }
+
+@keyframes adapti-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes adapti-wave { 0%,100% { transform: rotate(0); } 20% { transform: rotate(-22deg); } 40% { transform: rotate(6deg); } 60% { transform: rotate(-18deg); } 80% { transform: rotate(0); } }
+@keyframes adapti-blink { 0%,94%,100% { transform: scaleY(1); } 97% { transform: scaleY(.08); } }
+@keyframes adapti-jump { 0% { transform: translateY(0); } 35% { transform: translateY(-26px) rotate(-5deg); } 70% { transform: translateY(0) rotate(3deg); } 100% { transform: none; } }
+
+/* ───────── TOMBOL WHATSAPP ───────── */
+.wa-float {
+  position: fixed; right: 22px; bottom: 22px; z-index: 1500; display: none; align-items: center; gap: .55rem;
+  padding: .85rem 1.3rem; border-radius: 999px; color: #fff; font-weight: 800; font-size: .95rem; text-decoration: none;
+  background: linear-gradient(135deg, #25D366, #0FA958); box-shadow: 0 16px 30px -10px rgba(15,169,88,.7);
+  transition: transform .2s, box-shadow .2s;
+}
+.wa-float.is-ready { display: inline-flex; }
+.wa-float:hover { transform: translateY(-3px); color: #fff; box-shadow: 0 20px 34px -10px rgba(15,169,88,.85); }
+.wa-float i { font-size: 1.4rem; }
+.wa-float::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; border: 2px solid rgba(37,211,102,.7);
+  animation: wa-pulse 2.4s ease-out infinite; pointer-events: none;
+}
+@keyframes wa-pulse { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; } }
+
+/* ───────── RESPONSIF ───────── */
+@media (max-width: 880px) {
+  .bh-slide { grid-template-columns: 1fr; gap: 1.8rem; }
+  .bh-visual { max-width: 460px; }
+  .bh-stats { grid-template-columns: repeat(2, 1fr); }
+  .bh-badge { right: 0; }
+  .bh-float { left: 0; }
+}
+@media (max-width: 560px) {
+  .bh-hero { padding: 2.2rem 1.1rem 1.6rem; }
+  .adapti { width: 72px; right: 14px; bottom: 84px; }
+  .adapti-bubble { right: 58px; bottom: 62px; max-width: 170px; font-size: .74rem; }
+  .adapti-chip { display: none; }
+  .wa-float { right: 14px; bottom: 16px; padding: .75rem 1.05rem; font-size: .88rem; }
+  .bh-arrow { width: 38px; height: 38px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .adapti, .adapti .adapti-arm, .adapti .adapti-eyes, .wa-float::after { animation: none; }
+  .bh-slide, .bh-slide.is-active { transition: none; transform: none; }
+}

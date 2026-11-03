@@ -12,6 +12,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="beranda.css">
 </head>
 <body>
 
@@ -42,38 +43,166 @@
       </div>
     </nav>
 
-    <header class="landing-hero">
-      <div class="landing-hero-inner">
-        <div class="landing-hero-text">
-          <span class="page-eyebrow"><i class="bi bi-stars"></i>&nbsp; Asisten Perencanaan Pembelajaran Adaptif</span>
-          <h1>Rancang Modul Ajar <span class="accent-word">Adaptif</span> untuk Setiap Murid</h1>
-          <p class="landing-hero-sub">ADAPTIVA membantu guru IPAS SD/MI memetakan kesiapan belajar murid, membentuk kelompok belajar, lalu menghasilkan Modul Ajar terdiferensiasi sesuai Kurikulum Merdeka — lengkap dengan asesmen dan rubrik penilaian siap pakai.</p>
-          <div class="landing-hero-actions">
-            <button class="btn-adaptiva-primary btn-lg" onclick="showLoginScreen()"><i class="bi bi-box-arrow-in-right"></i> Login</button>
-            <a href="#landing-alur" class="btn-adaptiva-secondary">Lihat Cara Kerja</a>
+    <header class="bh-hero" id="berandaHero" aria-roledescription="carousel" aria-label="Sorotan ADAPTIVA">
+      <div class="bh-inner">
+        <div class="bh-slides">
+
+          <!-- Slide 1 -->
+          <div class="bh-slide is-active" aria-roledescription="slide" aria-label="1 dari 4">
+            <div class="bh-text">
+              <span class="bh-eyebrow"><i class="bi bi-stars"></i> Asisten Perencanaan Pembelajaran Adaptif</span>
+              <h1>Rancang Modul Ajar <span class="accent-word">Adaptif</span> untuk Setiap Murid</h1>
+              <p class="bh-sub">ADAPTIVA membantu guru IPAS SD/MI memetakan kesiapan belajar murid, membentuk kelompok belajar, lalu menghasilkan Modul Ajar terdiferensiasi sesuai Kurikulum Merdeka — lengkap dengan asesmen dan rubrik penilaian siap pakai.</p>
+              <div class="bh-actions">
+                <button class="btn-adaptiva-primary" onclick="showLoginScreen()"><i class="bi bi-box-arrow-in-right"></i> Login</button>
+                <a href="#landing-alur" class="bh-btn-ghost">Lihat Cara Kerja</a>
+              </div>
+              <p class="bh-note"><i class="bi bi-shield-check"></i> Akses khusus untuk akun (email &amp; password) yang telah didaftarkan Admin sekolah/madrasah Anda.</p>
+            </div>
+            <div class="bh-visual">
+              <div class="bh-card">
+                <div class="bh-card-top"><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span><small style="margin-left:.4rem;">Dashboard ADAPTIVA</small></div>
+                <div class="bh-statgrid">
+                  <div class="bh-stat"><b>5</b><span>Modul Kerja</span></div>
+                  <div class="bh-stat"><b>3</b><span>Peran Pengguna</span></div>
+                  <div class="bh-stat"><b>AI</b><span>Modul Ajar</span></div>
+                </div>
+                <div class="bh-rows">
+                  <div class="bh-row"><i class="bi bi-clipboard2-pulse"></i> Asesmen Diagnostik <div class="bh-bar"><span style="width:82%"></span></div></div>
+                  <div class="bh-row"><i class="bi bi-people"></i> Kelompok Belajar <div class="bh-bar"><span style="width:64%"></span></div></div>
+                  <div class="bh-row"><i class="bi bi-file-earmark-text"></i> Modul Ajar Terbit <div class="bh-bar"><span style="width:45%"></span></div></div>
+                </div>
+              </div>
+              <div class="bh-badge">Sesuai Kurikulum Merdeka</div>
+            </div>
           </div>
-          <p class="landing-hero-note"><i class="bi bi-shield-check"></i> Akses khusus untuk akun (email &amp; password) yang telah didaftarkan Admin sekolah/madrasah Anda.</p>
+
+          <!-- Slide 2 -->
+          <div class="bh-slide" aria-roledescription="slide" aria-label="2 dari 4" aria-hidden="true">
+            <div class="bh-text">
+              <span class="bh-eyebrow"><i class="bi bi-clipboard2-data"></i> Asesmen Diagnostik</span>
+              <h1>Kenali <span class="accent-word">Kesiapan, Minat</span> &amp; Gaya Belajar Murid</h1>
+              <p class="bh-sub">Murid mengisi asesmen kesiapan belajar secara daring lewat tautan dari guru. Hasilnya otomatis terbaca sistem menjadi profil tiap murid.</p>
+              <div class="bh-actions">
+                <button class="btn-adaptiva-primary" onclick="showLoginScreen()"><i class="bi bi-box-arrow-in-right"></i> Login</button>
+                <a href="#landing-fitur" class="bh-btn-ghost">Lihat Fitur</a>
+              </div>
+            </div>
+            <div class="bh-visual">
+              <div class="bh-card">
+                <div class="bh-card-top"><i class="bi bi-person-lines-fill"></i> Profil Murid</div>
+                <div class="bh-rows">
+                  <div class="bh-row"><i class="bi bi-bullseye"></i> Kesiapan <div class="bh-bar"><span style="width:70%"></span></div></div>
+                  <div class="bh-row"><i class="bi bi-heart"></i> Minat Belajar <div class="bh-bar teal"><span style="width:85%"></span></div></div>
+                  <div class="bh-row"><i class="bi bi-eye"></i> Gaya Belajar <div class="bh-bar"><span style="width:58%"></span></div></div>
+                </div>
+              </div>
+              <div class="bh-float"><i class="bi bi-lightning-charge-fill"></i><div>Hasil Otomatis<b>Terbaca Sistem</b></div></div>
+            </div>
+          </div>
+
+          <!-- Slide 3 -->
+          <div class="bh-slide" aria-roledescription="slide" aria-label="3 dari 4" aria-hidden="true">
+            <div class="bh-text">
+              <span class="bh-eyebrow"><i class="bi bi-people"></i> Kelompok Belajar Adaptif</span>
+              <h1>Kelompok Belajar <span class="accent-word">Terbentuk Otomatis</span></h1>
+              <p class="bh-sub">Murid dikelompokkan berdasarkan kesiapan, minat, dan gaya belajar, lalu guru dapat menyesuaikannya kembali sesuai kondisi kelas.</p>
+              <div class="bh-actions">
+                <button class="btn-adaptiva-primary" onclick="showLoginScreen()"><i class="bi bi-box-arrow-in-right"></i> Login</button>
+                <a href="#landing-teori" class="bh-btn-ghost">Landasan Teori</a>
+              </div>
+            </div>
+            <div class="bh-visual">
+              <div class="bh-card">
+                <div class="bh-card-top"><i class="bi bi-diagram-3"></i> Kelompok Kelas</div>
+                <div class="bh-groups">
+                  <div class="bh-group"><h6>Mahir</h6><div class="bh-dots-row"><i class="bi bi-person-fill"></i><i class="bi bi-person-fill"></i><i class="bi bi-person-fill"></i></div></div>
+                  <div class="bh-group g2"><h6>Berkembang</h6><div class="bh-dots-row"><i class="bi bi-person-fill"></i><i class="bi bi-person-fill"></i><i class="bi bi-person-fill"></i><i class="bi bi-person-fill"></i><i class="bi bi-person-fill"></i></div></div>
+                  <div class="bh-group g3"><h6>Perlu Pendampingan</h6><div class="bh-dots-row"><i class="bi bi-person-fill"></i><i class="bi bi-person-fill"></i></div></div>
+                </div>
+              </div>
+              <div class="bh-badge">Diferensiasi &amp; Scaffolding</div>
+            </div>
+          </div>
+
+          <!-- Slide 4 -->
+          <div class="bh-slide" aria-roledescription="slide" aria-label="4 dari 4" aria-hidden="true">
+            <div class="bh-text">
+              <span class="bh-eyebrow"><i class="bi bi-magic"></i> Modul Ajar Berbantuan AI</span>
+              <h1>Draf Modul Ajar <span class="accent-word">Siap Disunting</span> dalam Hitungan Menit</h1>
+              <p class="bh-sub">AI menyusun draf Modul Ajar terdiferensiasi per kelompok lengkap dengan scaffolding. Anda tinggal menyunting, lalu diajukan untuk divalidasi Kepala Sekolah/Pengawas.</p>
+              <div class="bh-actions">
+                <button class="btn-adaptiva-primary" onclick="showLoginScreen()"><i class="bi bi-box-arrow-in-right"></i> Login</button>
+                <a href="#landing-panduan" class="bh-btn-ghost">Panduan Penggunaan</a>
+              </div>
+            </div>
+            <div class="bh-visual">
+              <div class="bh-card">
+                <div class="bh-doc">
+                  <h6><i class="bi bi-file-earmark-text"></i> Modul Ajar — IPAS</h6>
+                  <div class="bh-line m"></div><div class="bh-line"></div><div class="bh-line s"></div><div class="bh-line o"></div><div class="bh-line m"></div>
+                  <span class="bh-check"><i class="bi bi-patch-check-fill"></i> Divalidasi Kepala Sekolah</span>
+                </div>
+              </div>
+              <div class="bh-float"><i class="bi bi-file-earmark-word"></i><div>Unduh<b>PDF &amp; Word</b></div></div>
+            </div>
+          </div>
+
         </div>
-        <div class="landing-hero-visual">
-          <div class="landing-mock-card">
-            <div class="mock-topbar">
-              <span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span>
-              <small style="margin-left:.4rem;opacity:.7;">Dashboard ADAPTIVA</small>
-            </div>
-            <div class="landing-mock-stats">
-              <div class="mock-stat"><b>5</b><span>Modul Kerja</span></div>
-              <div class="mock-stat"><b>3</b><span>Peran Pengguna</span></div>
-              <div class="mock-stat"><b>AI</b><span>Modul Ajar</span></div>
-            </div>
-            <div class="landing-mock-rows">
-              <div class="landing-mock-row"><i class="bi bi-clipboard2-pulse"></i> Asesmen Diagnostik <div class="mock-bar"><span style="width:82%"></span></div></div>
-              <div class="landing-mock-row"><i class="bi bi-people"></i> Kelompok Belajar <div class="mock-bar"><span style="width:64%"></span></div></div>
-              <div class="landing-mock-row"><i class="bi bi-file-earmark-text"></i> Modul Ajar Terbit <div class="mock-bar"><span style="width:45%"></span></div></div>
-            </div>
+
+        <div class="bh-controls">
+          <div class="bh-dots" role="tablist" aria-label="Pilih slide">
+            <button class="bh-dot is-active" type="button" aria-label="Slide 1"></button>
+            <button class="bh-dot" type="button" aria-label="Slide 2"></button>
+            <button class="bh-dot" type="button" aria-label="Slide 3"></button>
+            <button class="bh-dot" type="button" aria-label="Slide 4"></button>
           </div>
+          <div class="bh-arrows">
+            <button class="bh-arrow bh-prev" type="button" aria-label="Slide sebelumnya"><i class="bi bi-arrow-left"></i></button>
+            <button class="bh-arrow bh-next" type="button" aria-label="Slide berikutnya"><i class="bi bi-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <div class="bh-stats">
+          <div><b>5</b><span>Modul Perencanaan Terintegrasi</span></div>
+          <div><b>3</b><span>Peran: Guru, Admin, Kepala Sekolah</span></div>
+          <div><b>AI</b><span>Penyusun Draf Modul Ajar</span></div>
+          <div><b>100%</b><span>Selaras Kurikulum Merdeka</span></div>
         </div>
       </div>
     </header>
+
+    <!-- Maskot "Adapti", chip status & tombol WhatsApp (hanya tampil di halaman muka) -->
+    <div class="adapti" id="adapti" role="button" tabindex="0" aria-label="Adapti, maskot ADAPTIVA. Klik untuk tips.">
+      <div class="adapti-bubble" aria-live="polite"></div>
+      <svg viewBox="0 0 100 120" aria-hidden="true">
+        <defs>
+          <linearGradient id="adaptiBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#CFE3FA"/></linearGradient>
+          <linearGradient id="adaptiVisor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12304F"/><stop offset="1" stop-color="#0A1B2E"/></linearGradient>
+        </defs>
+        <line x1="50" y1="8" x2="50" y2="20" stroke="#9DB7D3" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="50" cy="7" r="5" fill="#FF7A00"/>
+        <ellipse cx="50" cy="112" rx="22" ry="4" fill="rgba(0,0,0,.18)"/>
+        <rect x="30" y="76" width="40" height="30" rx="14" fill="url(#adaptiBody)"/>
+        <circle cx="50" cy="91" r="6" fill="#00A896"/>
+        <path d="M45 91l3.5 3.5L55 88" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="20" y="82" width="9" height="18" rx="4.5" fill="#CFE3FA"/>
+        <g class="adapti-arm"><rect x="71" y="82" width="9" height="18" rx="4.5" fill="#CFE3FA"/></g>
+        <rect x="14" y="20" width="72" height="58" rx="26" fill="url(#adaptiBody)"/>
+        <rect x="8" y="40" width="7" height="16" rx="3.5" fill="#9DB7D3"/>
+        <rect x="85" y="40" width="7" height="16" rx="3.5" fill="#9DB7D3"/>
+        <rect x="23" y="32" width="54" height="34" rx="17" fill="url(#adaptiVisor)"/>
+        <g class="adapti-eyes">
+          <circle cx="38" cy="49" r="7.5" fill="#fff"/><circle cx="62" cy="49" r="7.5" fill="#fff"/>
+          <circle class="adapti-pupil" cx="38" cy="49" r="4" fill="#0A1B2E"/><circle class="adapti-pupil" cx="62" cy="49" r="4" fill="#0A1B2E"/>
+          <circle cx="36.5" cy="47" r="1.3" fill="#fff"/><circle cx="60.5" cy="47" r="1.3" fill="#fff"/>
+        </g>
+        <path d="M44 61q6 5 12 0" fill="none" stroke="#7FE3D8" stroke-width="2.4" stroke-linecap="round"/>
+        <circle cx="27" cy="60" r="3.2" fill="#FF9A9A" opacity=".55"/><circle cx="73" cy="60" r="3.2" fill="#FF9A9A" opacity=".55"/>
+      </svg>
+    </div>
+    <div class="adapti-chip"><i></i> Adapti: Aktif</div>
+    <a class="wa-float" id="waFloat" href="#" target="_blank" rel="noopener" aria-label="Chat WhatsApp untuk bertanya"><i class="bi bi-whatsapp"></i> Chat WhatsApp</a>
 
     <!-- ══════════════ TENTANG ══════════════ -->
     <section class="landing-section" id="landing-tentang" style="padding-top:40px;">
@@ -407,5 +536,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="app.js"></script>
+<script src="beranda.js"></script>
 </body>
 </html>
