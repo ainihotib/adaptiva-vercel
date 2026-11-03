@@ -133,22 +133,26 @@
 
 /* ───────── MASKOT "ADAPTI" ───────── */
 .adapti {
-  position: fixed; right: 22px; bottom: 92px; z-index: 1500; width: 96px; cursor: pointer; user-select: none;
-  filter: drop-shadow(0 14px 18px rgba(0,0,0,.35)); animation: adapti-float 3.6s ease-in-out infinite;
+  position: fixed; top: 0; left: 0; z-index: 1500; width: 96px; cursor: pointer; user-select: none;
+  filter: drop-shadow(0 14px 18px rgba(0,0,0,.35)); opacity: 0; will-change: transform;
   -webkit-tap-highlight-color: transparent;
 }
+.adapti.is-ready { opacity: 1; transition: opacity .4s; }
+.adapti.is-following { pointer-events: none; } /* tidak menghalangi klik saat mengikuti kursor */
+.adapti-inner { animation: adapti-float 3.6s ease-in-out infinite; }
 .adapti svg { width: 100%; height: auto; display: block; overflow: visible; }
 .adapti .adapti-arm { transform-origin: 78px 98px; animation: adapti-wave 2.4s ease-in-out infinite; }
 .adapti .adapti-eyes { animation: adapti-blink 5s infinite; transform-origin: 50px 52px; }
-.adapti.is-jump { animation: adapti-jump .6s ease; }
+.adapti.is-jump .adapti-inner { animation: adapti-jump .6s ease; }
 .adapti-bubble {
-  position: absolute; right: 78px; bottom: 84px; width: max-content; max-width: 210px; padding: .6rem .85rem;
+  position: absolute; right: 80px; bottom: 78px; width: max-content; max-width: 210px; padding: .6rem .85rem;
   border-radius: 1rem 1rem .25rem 1rem; font-size: .8rem; font-weight: 600; line-height: 1.4; color: #0F2942;
   background: #fff; box-shadow: 0 12px 28px -10px rgba(0,0,0,.45);
   opacity: 0; transform: translateY(6px) scale(.96); transform-origin: 100% 100%; pointer-events: none;
   transition: opacity .35s, transform .35s;
 }
 .adapti-bubble.is-show { opacity: 1; transform: none; }
+.adapti-bubble.to-right { right: auto; left: 80px; border-radius: 1rem 1rem 1rem .25rem; transform-origin: 0 100%; }
 .adapti-chip {
   position: fixed; left: 20px; bottom: 22px; z-index: 1500; display: inline-flex; align-items: center; gap: .45rem;
   padding: .45rem .85rem; border-radius: 999px; font-size: .78rem; font-weight: 700; color: #0F2942;
@@ -187,13 +191,14 @@
 }
 @media (max-width: 560px) {
   .bh-hero { padding: 2.2rem 1.1rem 1.6rem; }
-  .adapti { width: 72px; right: 14px; bottom: 84px; }
-  .adapti-bubble { right: 58px; bottom: 62px; max-width: 170px; font-size: .74rem; }
+  .adapti { width: 72px; }
+  .adapti-bubble { right: 60px; bottom: 58px; max-width: 170px; font-size: .74rem; }
+  .adapti-bubble.to-right { left: 60px; }
   .adapti-chip { display: none; }
   .wa-float { right: 14px; bottom: 16px; padding: .75rem 1.05rem; font-size: .88rem; }
   .bh-arrow { width: 38px; height: 38px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .adapti, .adapti .adapti-arm, .adapti .adapti-eyes, .wa-float::after { animation: none; }
+  .adapti-inner, .adapti .adapti-arm, .adapti .adapti-eyes, .wa-float::after { animation: none; }
   .bh-slide, .bh-slide.is-active { transition: none; transform: none; }
 }

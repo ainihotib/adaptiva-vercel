@@ -83,20 +83,55 @@ const BERANDA_WA_TEXT = 'Halo, saya guru pengguna ADAPTIVA. Saya ingin bertanya.
     }
     function nextTip() { say(TIPS[tip % TIPS.length]); tip++; }
 
-    // pupil mata mengikuti kursor / sentuhan
-    function look(clientX, clientY) {
-      const r = el.getBoundingClientRect();
-      const cx = r.left + r.width / 2, cy = r.top + r.height * 0.42;
-      const dx = clientX - cx, dy = clientY - cy;
-      const d = Math.hypot(dx, dy) || 1;
-      const m = Math.min(3.2, d / 40);
+    // Posisi robot: mengejar kursor dengan gerak halus (lerp). Di layar sentuh / reduced-motion
+    // robot diam di pojok kanan bawah (di atas tombol WhatsApp).
+    const canFollow = !reduceMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    let W = el.offsetWidth || 96, H = 120 / 100 * W;
+    let x = 0, y = 0, tx = 0, ty = 0, mx = -1, my = -1, raf = null, placed = false;
+
+    function cornerTarget() {
+      W = el.offsetWidth || 96; H = W * 1.2;
+      const waVisible = document.getElementById('waFloat') && document.getElementById('waFloat').classList.contains('is-ready');
+      return { x: window.innerWidth - W - 18, y: window.innerHeight - H - (waVisible ? 86 : 24) };
+    }
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function setPos() {
+      el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
+      bubble.classList.toggle('to-right', x < 230); // dekat tepi kiri → balon di sisi kanan
+    }
+    function look() {
+      const cx = x + W / 2, cy = y + H * 0.42;
+      const tX = mx < 0 ? cx : mx, tY = my < 0 ? cy : my;
+      const dx = tX - cx, dy = tY - cy, d = Math.hypot(dx, dy) || 1, m = Math.min(3.2, d / 40);
       const ox = (dx / d) * m, oy = (dy / d) * m;
       pupils.forEach(p => p.setAttribute('transform', 'translate(' + ox.toFixed(2) + ' ' + oy.toFixed(2) + ')'));
     }
-    if (!reduceMotion) {
-      window.addEventListener('mousemove', e => look(e.clientX, e.clientY), { passive: true });
-      window.addEventListener('touchmove', e => { const t = e.touches[0]; look(t.clientX, t.clientY); }, { passive: true });
+    function tick() {
+      const landing = document.getElementById('landingScreen');
+      const visible = landing && landing.offsetParent !== null;
+      if (visible) {
+        let goal;
+        if (canFollow && mx >= 0) {
+          // berhenti sedikit di kanan-bawah kursor; jika mentok tepi kanan/bawah, pindah ke sisi lain
+          let gx = mx + 34, gy = my + 26;
+          if (gx + W > window.innerWidth - 8) gx = mx - W - 34;
+          if (gy + H > window.innerHeight - 8) gy = my - H - 26;
+          goal = { x: clamp(gx, 8, window.innerWidth - W - 8), y: clamp(gy, 8, window.innerHeight - H - 8) };
+        } else goal = cornerTarget();
+        tx = goal.x; ty = goal.y;
+        if (!placed) { x = tx; y = ty; placed = true; el.classList.add('is-ready'); }
+        x += (tx - x) * 0.09; y += (ty - y) * 0.09;
+        setPos(); look();
+      }
+      raf = requestAnimationFrame(tick);
     }
+    if (canFollow) {
+      el.classList.add('is-following');
+      window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, { passive: true });
+      document.addEventListener('mouseleave', () => { mx = -1; my = -1; });
+    }
+    window.addEventListener('resize', () => { if (!canFollow || mx < 0) placed = false; });
+    raf = requestAnimationFrame(tick);
 
     el.addEventListener('click', () => {
       el.classList.remove('is-jump'); void el.offsetWidth; el.classList.add('is-jump');
