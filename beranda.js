@@ -6,7 +6,7 @@
 // Nomor WhatsApp admin/penyelenggara untuk pertanyaan guru.
 // Format internasional TANPA tanda + atau spasi, mis. '6281234567890'.
 // Kosongkan ('') untuk menyembunyikan tombol WhatsApp.
-const BERANDA_WA_NUMBER = '';
+const BERANDA_WA_NUMBER = '6281285959665';
 const BERANDA_WA_TEXT = 'Halo, saya guru pengguna ADAPTIVA. Saya ingin bertanya...';
 
 (function () {
