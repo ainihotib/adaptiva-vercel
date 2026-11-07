@@ -1943,10 +1943,12 @@ function karakterTableHtml_(instrumenKarakter) {
     <tbody>${rows}</tbody></table>
     <p class="small text-muted">Keterangan: BM = Belum Muncul (1); MB = Mulai Berkembang (2); BSH = Berkembang Sesuai Harapan (3); SB = Sangat Berkembang (4). Nilai akhir = (jumlah skor yang diperoleh / ${totalIndikator * 4}) × 100.</p>`;
 }
-function pancaCintaTableHtml_(instrumen, nilaiCinta) {
+function pancaCintaTableHtml_(instrumen, nilaiCinta, topikList, materi) {
   let data = (instrumen || []).filter(d => d && d.topik);
   // Modul lama (dibuat sebelum ada instrumen ini): pakai topik dari "nilaiCintaDitanamkan" dengan indikator dari penjelasannya.
   if (!data.length) data = (nilaiCinta || []).filter(d => d && d.topik).map(d => ({ topik: d.topik, indikator: [d.penjelasan || ('Murid menunjukkan sikap ' + d.topik.toLowerCase() + ' selama pembelajaran.')] }));
+  // Modul yang dibuat sebelum fitur ini: pakai daftar topik yang dipilih guru dengan indikator umum.
+  if (!data.length) data = (topikList || []).map(t => ({ topik: t, indikator: ['Murid menunjukkan sikap ' + String(t).toLowerCase() + ' selama pembelajaran' + (materi ? ' ' + materi : '') + '.'] }));
   if (!data.length) return '';
   let no = 1, total = 0;
   const rows = data.map(dim => {
@@ -2037,7 +2039,7 @@ function renderKontenPreviewHtml_(m) {
   html += '<h6 class="mt-3">2. Asesmen Formatif</h6>';
   html += '<p class="small">Diskusi, Presentasi, dan Unjuk Kerja dinilai menggunakan rubrik berikut.</p>';
   html += karakterTableHtml_(k.instrumenKarakter);
-  if (isKBC) html += pancaCintaTableHtml_(k.instrumenPancaCinta, k.nilaiCintaDitanamkan);
+  if (isKBC) html += pancaCintaTableHtml_(k.instrumenPancaCinta, k.nilaiCintaDitanamkan, info.topikKurikulumCinta, m.Materi);
   html += rubrikTableHtml_('b. Instrumen Penilaian Pengetahuan — Penilaian Kelompok Mengerjakan LKPD', k.rubrikPengetahuan, 5);
   html += rubrikTableHtml_('c. Instrumen Penilaian Keterampilan — Penilaian Hasil Unjuk Kerja Kelompok', k.rubrikKeterampilan, 5);
 
