@@ -51,7 +51,7 @@ const DEMO_FIXTURES = {
     statusModul: { Draft: 2, Diajukan: 1, Tervalidasi: 3 },
     insights: [
       'Total 20 siswa terdaftar di 2 kelas.',
-      '4 siswa berada di kelompok Perlu Pendampingan — pertimbangkan scaffolding Level 1 (Environmental Provisions).',
+      '4 siswa berada di kelompok Perlu Pendampingan — pertimbangkan scaffolding Tingkat 1 (Environmental Provisions).',
       'Mayoritas siswa memiliki minat belajar IPAS kategori "Tinggi" (11 siswa).',
       'Gaya belajar dominan di kelas Anda: Visual (8 siswa).'
     ]
@@ -320,13 +320,25 @@ function escJsAttr(str) {
     .replace(/"/g, '&quot;');
 }
 
+// Pengaman layar redup: setelah modal apa pun tertutup, bila tak ada modal yang terbuka, bersihkan sisa backdrop.
+document.addEventListener('hidden.bs.modal', () => {
+  setTimeout(() => {
+    if (!document.querySelector('.modal.show')) {
+      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('padding-right');
+    }
+  }, 50);
+});
+
 function fmtDate(str) { return str || '-'; }
 
 function openModal(title, bodyHtml, footerHtml) {
   document.getElementById('genericModalTitle').textContent = title;
   document.getElementById('genericModalBody').innerHTML = bodyHtml;
   document.getElementById('genericModalFooter').innerHTML = footerHtml || '';
-  new bootstrap.Modal(document.getElementById('genericModal')).show();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('genericModal')).show();
 }
 function closeModal() {
   const m = bootstrap.Modal.getInstance(document.getElementById('genericModal'));
@@ -334,7 +346,7 @@ function closeModal() {
 }
 
 function confirmDelete(fnName, id, afterFn, customMessage) {
-  const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal'));
   const bodyEl = document.querySelector('#deleteModal .modal-body p');
   if (bodyEl) bodyEl.textContent = customMessage || 'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.';
   document.getElementById('confirmDeleteBtn').onclick = () => {
@@ -530,7 +542,7 @@ function updateLanjutkanButton(sectionId) {
 function klikLanjutkan() {
   const btn = document.getElementById('btnLanjutkanFloating');
   if (!btn || !btn.dataset.next) return;
-  new bootstrap.Modal(document.getElementById('lanjutModal')).show();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('lanjutModal')).show();
 }
 
 function konfirmasiLanjutkanYa() {
@@ -1562,11 +1574,40 @@ function simpanDiferensiasiNow(kelompokId) {
 function loadScaffoldingSection() {
   document.getElementById('section-scaffolding').innerHTML = `
     <div class="page-eyebrow">Langkah 6</div><div class="page-title">Scaffolding Planner</div>
-    <div class="page-subtitle">Rancang gradasi dukungan bertahap (Modeling → Prompting → Guided Practice → Independent Practice) per kelompok, per TP.</div>
+    <div class="page-subtitle">Rancang gradasi dukungan bertahap (Modeling → Prompting → Guided Practice → Independent Practice) per kelompok.</div>
     <div class="mb-3" id="scafKelasSelector"></div>
     <div id="scafContent"></div>`;
   renderKelasSelectorInto('scafKelasSelector', 'renderScaffoldingContent');
   setTimeout(renderScaffoldingContent, 400);
+}
+const SCAF_LANGKAH = [
+  { nama: 'Modeling', ringkas: 'Guru menunjukkan dan menjelaskan cara kerja sambil memikirkan langkahnya keras-keras.' },
+  { nama: 'Prompting', ringkas: 'Guru mengajukan pertanyaan pemandu; siswa menceritakan ulang dan menjelaskan alasannya.' },
+  { nama: 'Guided Practice', ringkas: 'Siswa mencoba sendiri dengan pendampingan; guru memberi petunjuk seperlunya lalu menariknya kembali.' },
+  { nama: 'Independent Practice', ringkas: 'Siswa mengerjakan dan menerapkan konsep sendiri; guru memberi umpan balik sesudahnya.' }
+];
+function scafOnboardHtml() {
+  let sudah = false;
+  try { sudah = localStorage.getItem('adaptiva_scaf_onboard') === '1'; } catch (e) {}
+  return `<div id="scafOnboard" class="card mb-3" style="border-left:4px solid #FF7A00; ${sudah ? 'display:none;' : ''}">
+    <div class="d-flex justify-content-between align-items-start">
+      <div><b><i class="bi bi-lightbulb"></i> Cara membaca Scaffolding Planner</b>
+      <p class="small mb-2 mt-1">Bantuan diberikan bertahap dalam empat langkah, dari dukungan penuh guru sampai siswa mandiri. Tiap kelompok mulai dari langkah yang sesuai kesiapannya, lalu dukungan dikurangi (fading) dan pindah ke langkah berikutnya ketika tanda siap pada kotak langkah terlihat (kontingensi).</p></div>
+      <button class="btn btn-sm btn-adaptiva-primary ms-2" style="white-space:nowrap" onclick="tutupScafOnboard()">Mengerti</button>
+    </div>
+    <div class="row g-2">
+      ${SCAF_LANGKAH.map((l, i) => `<div class="col-md-3"><div class="p-2 h-100" style="background:rgba(15,41,66,.05);border-radius:10px;">
+        <div class="small fw-bold">Langkah ${i + 1}: ${l.nama}</div><div class="small text-muted">${l.ringkas}</div></div></div>`).join('')}
+    </div>
+    <p class="small text-muted mt-2 mb-0">Kelompok yang sudah menguasai materi boleh mulai dari langkah yang lebih akhir; kotak langkah yang dilewati dibiarkan kosong.</p>
+  </div>`;
+}
+function tutupScafOnboard() {
+  const el = document.getElementById('scafOnboard'); if (el) el.style.display = 'none';
+  try { localStorage.setItem('adaptiva_scaf_onboard', '1'); } catch (e) {}
+}
+function bukaScafOnboard() {
+  const el = document.getElementById('scafOnboard'); if (el) { el.style.display = ''; el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 }
 function renderScaffoldingContent() {
   if (!AppState.kelasId) return;
@@ -1577,41 +1618,64 @@ function renderScaffoldingContent() {
       return;
     }
     gsRun('getScaffoldingByKelas', [AppState.kelasId], sres => {
+     gsRun('getCPTPByKelas', [AppState.kelasId], cres => {
       const saved = sres.data || [];
+      const tpList = [];
+      (cres.data || []).forEach(c => (c.TPJson || []).forEach(t => { if (t && t.teks) tpList.push(t.teks); }));
+      window.__scafTPList = tpList;
       window.__kelompokRekMap = window.__kelompokRekMap || {};
-      let html = '<p class="text-muted small">Satu rencana scaffolding berlaku untuk semua TP pada kelompok yang sama (tidak perlu diulang per TP). Tombol "Isi Rekomendasi" mengisi level yang sesuai kesiapan kelompok dengan saran yang sama dengan Kelompok Belajar — level lain tetap bisa disesuaikan manual.</p>';
-      const levels = ['Level 1: Modeling','Level 2: Prompting','Level 3: Guided Practice','Level 4: Independent Practice'];
+      let html = scafOnboardHtml();
+      html += `<div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <button class="btn btn-sm btn-adaptiva-ghost" onclick="bukaScafOnboard()"><i class="bi bi-question-circle"></i> Cara membaca</button>
+        ${tpList.length ? `<label class="small mb-0" for="scafTpSelect">Kutip TP pada saran (opsional):</label>
+        <select id="scafTpSelect" class="form-select form-select-sm" style="max-width:480px;">
+          <option value="">— Tanpa kutipan TP —</option>
+          ${tpList.map((t, i) => `<option value="${i}" ${tpList.length === 1 ? 'selected' : ''}>${esc(t.length > 110 ? t.slice(0, 107) + '…' : t)}</option>`).join('')}
+        </select>` : ''}
+      </div>`;
+      html += '<p class="text-muted small">Satu rencana scaffolding berlaku untuk semua TP pada kelompok yang sama. Tombol "Isi Rekomendasi" mengisi kotak mulai dari langkah awal kelompok sampai Langkah 4, sesuai materi (dan TP bila dipilih). Langkah yang sudah terlewati dibiarkan kosong. Semua kotak tetap bisa disesuaikan manual.</p>';
       kelompokList.forEach(k => {
-        window.__kelompokRekMap[k.ID] = k.rekomendasi || {};
+        const rek = k.rekomendasi || {};
+        const plan = rek.scaffoldingPlan || { posisi: 1, langkah: ['', '', '', ''], tandaSiap: [] };
+        window.__kelompokRekMap[k.ID] = rek;
         const ex = saved.find(s => s.KelompokID === k.ID) || {};
         html += `<div class="card">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="badge-tier ${TIER_CLASS[k.NamaKelompok]}"><span class="dot"></span>${TIER_LABEL[k.NamaKelompok]}</span>
+          <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+            <div><span class="badge-tier ${TIER_CLASS[k.NamaKelompok]}"><span class="dot"></span>${TIER_LABEL[k.NamaKelompok]}</span>
+              <span class="small text-muted ms-2">Mulai dari Langkah ${plan.posisi}: ${SCAF_LANGKAH[plan.posisi - 1].nama}</span></div>
             <button class="btn btn-sm btn-adaptiva-ghost" onclick="isiRekomendasiScaffolding('${k.ID}')"><i class="bi bi-magic"></i> Isi Rekomendasi</button>
           </div>
           <div class="row g-2">
-            ${levels.map((lab, i) => `<div class="col-md-3"><label class="form-label">${lab}</label>
-              <textarea class="form-control scaf-l${i+1}" rows="3" data-kid="${k.ID}">${esc(ex['Level' + (i+1)])}</textarea></div>`).join('')}
+            ${SCAF_LANGKAH.map((l, i) => `<div class="col-md-3"><label class="form-label">Langkah ${i + 1}: ${l.nama}${i + 1 < plan.posisi ? ' <span class="small text-muted">(dilewati kelompok ini)</span>' : ''}</label>
+              <textarea class="form-control scaf-l${i + 1}" rows="5" data-kid="${k.ID}">${esc(ex['Level' + (i + 1)])}</textarea>
+              ${plan.tandaSiap && plan.tandaSiap[i] ? `<div class="form-text">${i < 3 ? 'Tanda siap beralih' : 'Tanda tercapai'}: ${esc(plan.tandaSiap[i])}</div>` : ''}</div>`).join('')}
           </div>
           <button class="btn btn-sm btn-adaptiva-primary mt-2" onclick="simpanScaffoldingNow('${k.ID}')">Simpan Scaffolding</button>
         </div>`;
       });
       document.getElementById('scafContent').innerHTML = html;
+     });
     });
   });
 }
 function isiRekomendasiScaffolding(kelompokId) {
   const rek = (window.__kelompokRekMap || {})[kelompokId] || {};
-  let level = rek.scaffoldingLevel;
-  if (!level && rek.scaffoldingTeori) {
-    const m = /Level\s*(\d)/.exec(rek.scaffoldingTeori);
-    if (m) level = parseInt(m[1], 10);
-  }
-  if (!level) level = 2;
+  const plan = rek.scaffoldingPlan;
+  if (!plan) { showToast('Peringatan', 'Rekomendasi belum tersedia untuk kelompok ini.', 'warning'); return; }
   const sel = `[data-kid="${kelompokId}"]`;
-  const box = document.querySelector('.scaf-l' + level + sel);
-  if (box) box.value = rek.scaffoldingGuru || '';
-  showToast('Terisi', `Saran diisi pada Level ${level} sesuai kesiapan kelompok ini. Level lain bisa disesuaikan manual.`, 'success');
+  const tpSel = document.getElementById('scafTpSelect');
+  const tpIdx = tpSel && tpSel.value !== '' ? parseInt(tpSel.value, 10) : -1;
+  let tp = tpIdx >= 0 ? (window.__scafTPList || [])[tpIdx] : '';
+  if (tp && tp.length > 180) tp = tp.slice(0, 177) + '…';
+  let terisi = 0;
+  plan.langkah.forEach((teks, i) => {
+    if (!teks) return;
+    const box = document.querySelector('.scaf-l' + (i + 1) + sel);
+    if (!box) return;
+    box.value = teks + (tp ? '\n(TP: ' + tp + ')' : '');
+    terisi++;
+  });
+  showToast('Terisi', `${terisi} kotak diisi mulai dari Langkah ${plan.posisi}. Silakan sesuaikan bila perlu, lalu simpan.`, 'success');
 }
 function simpanScaffoldingNow(kelompokId) {
   const sel = `[data-kid="${kelompokId}"]`;
@@ -2241,7 +2305,7 @@ function initPublicForm() {
 // ════════════════════════════════════════════════════════
 
 const MISI_META = {
-  kognitif:     { key: 'kognitif', badge: 'MISI 1 · BERBURU ENERGI', cls: 'm1', mascot: '🧑‍🔬', judul: 'Temukan kristal energi yang hilang!' },
+  kognitif:     { key: 'kognitif', badge: 'MISI 1 · TEMUKAN JAWABANNYA', cls: 'm1', mascot: '🧑‍🔬', judul: 'Pilih jawaban yang paling tepat!' },
   gaya_belajar: { key: 'gaya_belajar', badge: 'MISI 2 · CARA BELAJARMU', cls: 'm2', mascot: '🤖', judul: 'Pilih aktivitas favoritmu di laboratorium.' },
   minat:        { key: 'minat', badge: 'MISI 3 · TANGKI SEMANGAT', cls: 'm3', mascot: '🦉', judul: 'Isi tangki semangat Robo IPA!' }
 };
@@ -2376,13 +2440,25 @@ function jawabLikert(i) {
 
 function selesaikanGame() {
   const g = window._game;
+  // Cegah pengiriman ganda (klik berulang / ketukan ganda di layar sentuh).
+  if (g.sedangKirim) return;
+  g.sedangKirim = true;
   document.getElementById('publicContent').innerHTML = `
     <div class="text-center py-3">
       <div class="spinner-border text-primary" role="status"></div>
       <p class="mt-2 text-muted">Menyimpan petualanganmu...</p>
     </div>`;
   gsRun('submitPublicResponse', [g.token, g.siswaId, g.jawaban], res => {
-    if (!res.success) { showToast('Gagal', res.message, 'danger'); return; }
+    if (!res.success) {
+      g.sedangKirim = false;
+      showToast('Gagal', res.message, 'danger');
+      document.getElementById('publicContent').innerHTML = `
+        <div class="text-center py-3">
+          <p class="mb-3">Jawabanmu belum terkirim. Periksa koneksi internet, lalu coba lagi.</p>
+          <button class="btn btn-primary" onclick="selesaikanGame()">Kirim lagi</button>
+        </div>`;
+      return;
+    }
     document.getElementById('publicContent').innerHTML = `
       <div class="text-center py-2">
         <div class="game-result-badge">🏆</div>

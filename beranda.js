@@ -71,6 +71,24 @@ const BERANDA_WA_TEXT = 'Halo, saya guru pengguna ADAPTIVA. Saya ingin bertanya.
   function initMascot() {
     const el = document.getElementById('adapti');
     if (!el) return;
+    // Pilihan maskot aktif/nonaktif (disimpan per perangkat). Bawaan: aktif di komputer, nonaktif di layar sentuh.
+    const touch = !window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    let aktif = !touch;
+    try { const v = localStorage.getItem('adaptiva_maskot'); if (v === 'on') aktif = true; else if (v === 'off') aktif = false; } catch (e) {}
+    const sw = document.createElement('button');
+    sw.type = 'button'; sw.className = 'adapti-switch';
+    function applyAktif() {
+      el.style.display = aktif ? '' : 'none';
+      sw.innerHTML = '<i class="bi bi-robot"></i> Maskot: ' + (aktif ? 'Aktif' : 'Nonaktif');
+      sw.setAttribute('aria-pressed', aktif ? 'true' : 'false');
+    }
+    sw.addEventListener('click', () => {
+      aktif = !aktif;
+      try { localStorage.setItem('adaptiva_maskot', aktif ? 'on' : 'off'); } catch (e) {}
+      applyAktif();
+    });
+    document.body.appendChild(sw);
+    applyAktif();
     const bubble = el.querySelector('.adapti-bubble');
     const pupils = Array.from(el.querySelectorAll('.adapti-pupil'));
     let tip = 0, hideT = null;
@@ -86,11 +104,11 @@ const BERANDA_WA_TEXT = 'Halo, saya guru pengguna ADAPTIVA. Saya ingin bertanya.
     // Posisi robot: mengejar kursor dengan gerak halus (lerp). Di layar sentuh / reduced-motion
     // robot diam di pojok kanan bawah (di atas tombol WhatsApp).
     const canFollow = !reduceMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    let W = el.offsetWidth || 96, H = 120 / 100 * W;
+    let W = el.offsetWidth || 72, H = 120 / 100 * W;
     let x = 0, y = 0, tx = 0, ty = 0, mx = -1, my = -1, raf = null, placed = false;
 
     function cornerTarget() {
-      W = el.offsetWidth || 96; H = W * 1.2;
+      W = el.offsetWidth || 72; H = W * 1.2;
       const waVisible = document.getElementById('waFloat') && document.getElementById('waFloat').classList.contains('is-ready');
       return { x: window.innerWidth - W - 18, y: window.innerHeight - H - (waVisible ? 86 : 24) };
     }
@@ -109,13 +127,14 @@ const BERANDA_WA_TEXT = 'Halo, saya guru pengguna ADAPTIVA. Saya ingin bertanya.
     function tick() {
       const landing = document.getElementById('landingScreen');
       const visible = landing && landing.offsetParent !== null;
+      sw.style.display = visible ? '' : 'none';
       if (visible) {
         let goal;
         if (canFollow && mx >= 0) {
           // berhenti sedikit di kanan-bawah kursor; jika mentok tepi kanan/bawah, pindah ke sisi lain
-          let gx = mx + 34, gy = my + 26;
-          if (gx + W > window.innerWidth - 8) gx = mx - W - 34;
-          if (gy + H > window.innerHeight - 8) gy = my - H - 26;
+          let gx = mx + 22, gy = my + 16;
+          if (gx + W > window.innerWidth - 8) gx = mx - W - 22;
+          if (gy + H > window.innerHeight - 8) gy = my - H - 16;
           goal = { x: clamp(gx, 8, window.innerWidth - W - 8), y: clamp(gy, 8, window.innerHeight - H - 8) };
         } else goal = cornerTarget();
         tx = goal.x; ty = goal.y;

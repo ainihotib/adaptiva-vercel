@@ -133,7 +133,7 @@
 
 /* ───────── MASKOT "ADAPTI" ───────── */
 .adapti {
-  position: fixed; top: 0; left: 0; z-index: 1500; width: 96px; cursor: pointer; user-select: none;
+  position: fixed; top: 0; left: 0; z-index: 1500; width: 72px; cursor: pointer; user-select: none;
   filter: drop-shadow(0 14px 18px rgba(0,0,0,.35)); opacity: 0; will-change: transform;
   -webkit-tap-highlight-color: transparent;
 }
@@ -202,3 +202,11 @@
   .adapti-inner, .adapti .adapti-arm, .adapti .adapti-eyes, .wa-float::after { animation: none; }
   .bh-slide, .bh-slide.is-active { transition: none; transform: none; }
 }
+
+/* Tombol aktif/nonaktif maskot */
+.adapti-switch {
+  position: fixed; left: 14px; bottom: 14px; z-index: 1600; border: 1px solid rgba(255,255,255,.25);
+  background: rgba(15,41,66,.88); color: #fff; font-size: .75rem; font-weight: 600; padding: .35rem .7rem;
+  border-radius: 999px; cursor: pointer;
+}
+.adapti-switch:hover { background: rgba(15,41,66,1); }
