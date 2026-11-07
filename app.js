@@ -1943,6 +1943,23 @@ function karakterTableHtml_(instrumenKarakter) {
     <tbody>${rows}</tbody></table>
     <p class="small text-muted">Keterangan: BM = Belum Muncul (1); MB = Mulai Berkembang (2); BSH = Berkembang Sesuai Harapan (3); SB = Sangat Berkembang (4). Nilai akhir = (jumlah skor yang diperoleh / ${totalIndikator * 4}) × 100.</p>`;
 }
+function pancaCintaTableHtml_(instrumen, nilaiCinta) {
+  let data = (instrumen || []).filter(d => d && d.topik);
+  // Modul lama (dibuat sebelum ada instrumen ini): pakai topik dari "nilaiCintaDitanamkan" dengan indikator dari penjelasannya.
+  if (!data.length) data = (nilaiCinta || []).filter(d => d && d.topik).map(d => ({ topik: d.topik, indikator: [d.penjelasan || ('Murid menunjukkan sikap ' + d.topik.toLowerCase() + ' selama pembelajaran.')] }));
+  if (!data.length) return '';
+  let no = 1, total = 0;
+  const rows = data.map(dim => {
+    const dimRow = `<tr class="table-light"><td></td><td class="fw-semibold">${esc(dim.topik)}</td><td></td><td></td><td></td><td></td></tr>`;
+    const ind = (dim.indikator || []).map(i => { total++; return `<tr><td>${no++}</td><td>${esc(i)}</td><td></td><td></td><td></td><td></td></tr>`; }).join('');
+    return dimRow + ind;
+  }).join('');
+  return `<h6 class="mt-3">Instrumen Penilaian Nilai Panca Cinta</h6>
+    <p class="small text-muted mb-1">Teknik Penilaian: observasi guru dan penilaian diri.</p>
+    <table class="table table-bordered table-sm doc-table"><thead><tr><th>No.</th><th>Nilai Cinta dan Indikator</th><th>BM</th><th>MB</th><th>BSH</th><th>SB</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <p class="small text-muted">Keterangan: BM = Belum Muncul (1); MB = Mulai Berkembang (2); BSH = Berkembang Sesuai Harapan (3); SB = Sangat Berkembang (4). Nilai akhir = (jumlah skor yang diperoleh / ${total * 4}) × 100.</p>`;
+}
 function collectKelompokLintasPertemuan_(pertemuanList, tierKey) {
   const hasil = [];
   const tambah = val => {
@@ -2020,6 +2037,7 @@ function renderKontenPreviewHtml_(m) {
   html += '<h6 class="mt-3">2. Asesmen Formatif</h6>';
   html += '<p class="small">Diskusi, Presentasi, dan Unjuk Kerja dinilai menggunakan rubrik berikut.</p>';
   html += karakterTableHtml_(k.instrumenKarakter);
+  if (isKBC) html += pancaCintaTableHtml_(k.instrumenPancaCinta, k.nilaiCintaDitanamkan);
   html += rubrikTableHtml_('b. Instrumen Penilaian Pengetahuan — Penilaian Kelompok Mengerjakan LKPD', k.rubrikPengetahuan, 5);
   html += rubrikTableHtml_('c. Instrumen Penilaian Keterampilan — Penilaian Hasil Unjuk Kerja Kelompok', k.rubrikKeterampilan, 5);
 
