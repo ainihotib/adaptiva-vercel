@@ -236,7 +236,9 @@ textarea.form-control { height:auto; }
 /* ── Tables ── */
 .table-responsive { border-radius: var(--radius-card); overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; border:1px solid var(--border-color); }
 .table-responsive > .table { margin-bottom:0; min-width:560px; }
-.table-responsive > .table th:first-child, .table-responsive > .table td:first-child { position:sticky; left:0; z-index:1; background:var(--bs-body-bg,#fff); }
+.table-responsive > .table th:first-child, .table-responsive > .table td:first-child { position:sticky; left:0; z-index:1; }
+.table-responsive > .table tbody td:first-child { background:var(--bs-body-bg,#fff); }
+.table-responsive > .table thead th:first-child { background:var(--primary); }
 @media (max-width:767px) { .table-responsive > .table th, .table-responsive > .table td { white-space:nowrap; } .table-responsive > .table td.wrap-ok { white-space:normal; } }
 .table { color: var(--text-primary); margin-bottom:0; background:var(--surface); }
 .table thead th { background: var(--primary); color:#fff; font-weight:700; font-size:.8rem; border:none; white-space:nowrap; }
