@@ -1928,8 +1928,15 @@ function rubrikTableHtml_(judul, rubrik, jumlahBarisKelompok) {
     <tbody>${pedomanList.map(pd => `<tr><td>${esc(pd.aspek || '-')}</td><td>${esc(pd.skor4 || '-')}</td><td>${esc(pd.skor3 || '-')}</td><td>${esc(pd.skor2 || '-')}</td><td>${esc(pd.skor1 || '-')}</td></tr>`).join('')}</tbody></table>
     <p class="small text-muted">Nilai Akhir = (Jumlah skor yang diperoleh ÷ ${aspekList.length * 4}) × 100.</p>`;
 }
-function karakterTableHtml_(instrumenKarakter) {
-  instrumenKarakter = instrumenKarakter || [];
+function karakterTableHtml_(instrumenKarakter, dplList, materi) {
+  // Normalisasi: terima nama kolom alternatif & buang entri kosong.
+  instrumenKarakter = (instrumenKarakter || []).map(d => {
+    d = d || {};
+    const ind = d.indikator || d.indikatorPerilaku || [];
+    return { dimensi: d.dimensi || d.nama || d.dpl || d.topik || '', indikator: Array.isArray(ind) ? ind : (ind ? [ind] : []) };
+  }).filter(d => d.dimensi && d.indikator.length);
+  // Bila data instrumen kosong tetapi guru memilih Dimensi Profil Lulusan: tampilkan tabel dengan indikator umum.
+  if (!instrumenKarakter.length) instrumenKarakter = (dplList || []).map(x => ({ dimensi: x, indikator: ['Murid menunjukkan sikap/perilaku yang mencerminkan ' + x + (materi ? ' selama pembelajaran ' + materi : ' selama pembelajaran') + '.'] }));
   if (!instrumenKarakter.length) return '';
   let no = 1, totalIndikator = 0;
   const rows = instrumenKarakter.map(dim => {
@@ -2038,7 +2045,7 @@ function renderKontenPreviewHtml_(m) {
 
   html += '<h6 class="mt-3">2. Asesmen Formatif</h6>';
   html += '<p class="small">Diskusi, Presentasi, dan Unjuk Kerja dinilai menggunakan rubrik berikut.</p>';
-  html += karakterTableHtml_(k.instrumenKarakter);
+  html += karakterTableHtml_(k.instrumenKarakter, info.dimensiProfilLulusan, m.Materi);
   if (isKBC) html += pancaCintaTableHtml_(k.instrumenPancaCinta, k.nilaiCintaDitanamkan, info.topikKurikulumCinta, m.Materi);
   html += rubrikTableHtml_('b. Instrumen Penilaian Pengetahuan — Penilaian Kelompok Mengerjakan LKPD', k.rubrikPengetahuan, 5);
   html += rubrikTableHtml_('c. Instrumen Penilaian Keterampilan — Penilaian Hasil Unjuk Kerja Kelompok', k.rubrikKeterampilan, 5);
