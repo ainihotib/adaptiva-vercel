@@ -912,7 +912,7 @@ function editKelas(id) {
       <select class="form-select" id="fFase">
         ${['A','B','C'].map(f => `<option value="Fase ${f}" ${data.Fase === 'Fase ' + f ? 'selected' : ''}>Fase ${f}</option>`).join('')}
       </select></div>
-    <div class="mb-3"><label class="form-label">Tahun Ajaran</label><input class="form-control" id="fTahunAjaran" value="${esc(data.TahunAjaran || '2025/2026')}"></div>`;
+    <div class="mb-3"><label class="form-label">Tahun Ajaran</label><input class="form-control" id="fTahunAjaran" value="${esc(data.TahunAjaran || '2026/2027')}"></div>`;
   openModal(isEdit ? 'Edit Kelas' : 'Tambah Kelas', body, `
     <button class="btn btn-adaptiva-secondary" data-bs-dismiss="modal">Batal</button>
     <button class="btn btn-adaptiva-primary" onclick="saveKelas()">Simpan</button>`);
