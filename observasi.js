@@ -5,7 +5,8 @@
    Admin: target 20%, jadwal, rekap pengamat vs penilaian diri
    ============================================================ */
 const OB = { ins: null, role: '', tab: 'jadwal', jadwal: [], guru: [], form: null };
-const OB_FILE = 'Lembar_Observasi_dan_Jurnal_Kelas_ADAPTIVA.docx';
+const OB_FILE_GURU = 'Instrumen_Observasi_Guru_ADAPTIVA.docx';
+const OB_FILE_KM = 'Instrumen_Observasi_Kepala_Madrasah_ADAPTIVA.docx';
 
 function obSec_() { return document.getElementById('section-observasi'); }
 function obBadge_(s) {
@@ -29,7 +30,9 @@ function loadObservasi() {
 }
 
 function obUnduhLembar_() {
-  return '<a class="btn btn-sm btn-adaptiva-secondary" href="' + OB_FILE + '" download><i class="bi bi-download"></i> Unduh lembar kosong (isi manual)</a>';
+  const btn = (f, t) => '<a class="btn btn-sm btn-adaptiva-secondary ms-1" href="' + f + '" download><i class="bi bi-download"></i> ' + t + '</a>';
+  if (OB.role === 'Guru') return btn(OB_FILE_GURU, 'Unduh lembar kosong (isi manual)');
+  return btn(OB_FILE_KM, 'Lembar pengamat (kosong)') + btn(OB_FILE_GURU, 'Lembar guru (kosong)');
 }
 
 /* ───────── Kepala Sekolah / Pengawas / Admin ───────── */
@@ -167,15 +170,15 @@ const OB_GLOSARIUM = [
   ['Modeling','Pemodelan atau pemberian contoh'],['Prompting','Pemberian petunjuk pengarah'],['Guided Practice','Latihan terbimbing'],['Independent Practice','Latihan mandiri'],
   ['Tingkat 1 (Environmental Provisions)','Penyediaan lingkungan belajar yang mendukung'],['Tingkat 2 (Explaining, Reviewing, Restructuring)','Menjelaskan, meninjau kembali, dan menyusun ulang'],['Tingkat 3 (Developing Conceptual Thinking)','Pengembangan pemahaman konsep'],
   ['Kontingensi','Penyesuaian bantuan berdasarkan respons murid'],['Fading','Pengurangan bantuan secara bertahap'],['Scaffolding Planner','Perencana bantuan belajar (fitur ADAPTIVA)'],
-  ['Gaya belajar','Preferensi cara belajar yang diketahui guru'],['Konsep prasyarat','Konsep yang harus dikuasai lebih dulu, mis. mengenal bagian tumbuhan sebelum membahas fungsinya'],
-  ['Tingkat tantangan','Mis. tugas menyebutkan ciri dibandingkan menjelaskan hubungan'],['Deskriptor','Uraian ciri pada setiap skor'],['Observer','Pengamat']
+  ['Gaya belajar','Preferensi cara belajar yang diketahui dari profil siswa'],['Konsep prasyarat','Konsep yang harus dikuasai lebih dulu, mis. mengenal bagian tumbuhan sebelum membahas fungsinya'],
+  ['Tingkat tantangan','Mis. tugas menyebutkan ciri dibandingkan menjelaskan hubungan'],['Uraian ciri','Penjelasan ciri pada setiap skor 1–4 di rubrik'],['Sebagian kelompok','Lebih dari separuh kelompok yang diamati'],['Sesekali','Satu atau dua kali pada pertemuan'],['Tiga tahap','Di awal, saat berlatih, dan setelah tugas']
 ];
 function obPetunjuk_(obs) {
   const rows = OB_GLOSARIUM.map(g => '<tr><td>' + esc(g[0]) + '</td><td>' + esc(g[1]) + '</td></tr>').join('');
   return '<details class="mb-3"><summary><b>Petunjuk pengisian &amp; glosarium istilah</b></summary><div class="small mt-2">' +
     '<ol><li>' + (obs ? 'Catat kejadian apa adanya, lalu bedakan kejadian yang teramati dari tafsiran Anda.' : 'Isi tanpa melihat lembar observasi pengamat, dan isi dengan jujur: lembar ini untuk melihat penerapan diferensiasi dan scaffolding, bukan menilai kinerja Anda.') + '</li>' +
     '<li>Pilih <b>Ya</b> bila perilaku benar-benar terjadi pada pertemuan ini, <b>Tidak</b> bila tidak. Setiap jawaban Ya wajib disertai bukti: apa yang dilakukan, untuk kelompok mana, pada bagian pembelajaran mana.</li>' +
-    '<li>Pilih satu skor 1–4 per rubrik berdasarkan uraian ciri yang paling menggambarkan pembelajaran secara keseluruhan, lalu tulis alasan singkat.</li>' +
+    '<li>Pilih satu skor 1–4 per rubrik berdasarkan uraian ciri yang paling menggambarkan pembelajaran secara keseluruhan, lalu tulis alasan singkat. Bila ciri yang teramati berada pada dua uraian skor, pilih skor yang lebih rendah; skor yang lebih tinggi hanya bila seluruh cirinya terpenuhi. Untuk R5, hitung dahulu jumlah langkah yang terlaksana; urutan dinilai mulai skor 3. Bila tiga atau empat langkah terlaksana tetapi urutannya tidak sesuai kebutuhan kelompok, pilih skor 2.</li>' +
     '<li>Ringkasan: % Ya = jumlah Ya ÷ jumlah butir × 100%. Rata-rata rubrik = jumlah skor R1–R6 ÷ 6 bila semua rubrik terisi.</li></ol>' +
     '<table class="table table-sm"><thead><tr><th>Istilah</th><th>Padanan / penjelasan</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>';
 }
