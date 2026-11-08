@@ -162,6 +162,24 @@ function obBukaDiri_(id) {
   });
 }
 
+
+const OB_GLOSARIUM = [
+  ['Modeling','Pemodelan atau pemberian contoh'],['Prompting','Pemberian petunjuk pengarah'],['Guided Practice','Latihan terbimbing'],['Independent Practice','Latihan mandiri'],
+  ['Tingkat 1 (Environmental Provisions)','Penyediaan lingkungan belajar yang mendukung'],['Tingkat 2 (Explaining, Reviewing, Restructuring)','Menjelaskan, meninjau kembali, dan menyusun ulang'],['Tingkat 3 (Developing Conceptual Thinking)','Pengembangan pemahaman konsep'],
+  ['Kontingensi','Penyesuaian bantuan berdasarkan respons murid'],['Fading','Pengurangan bantuan secara bertahap'],['Scaffolding Planner','Perencana bantuan belajar (fitur ADAPTIVA)'],
+  ['Gaya belajar','Preferensi cara belajar yang diketahui guru'],['Konsep prasyarat','Konsep yang harus dikuasai lebih dulu, mis. mengenal bagian tumbuhan sebelum membahas fungsinya'],
+  ['Tingkat tantangan','Mis. tugas menyebutkan ciri dibandingkan menjelaskan hubungan'],['Deskriptor','Uraian ciri pada setiap skor'],['Observer','Pengamat']
+];
+function obPetunjuk_(obs) {
+  const rows = OB_GLOSARIUM.map(g => '<tr><td>' + esc(g[0]) + '</td><td>' + esc(g[1]) + '</td></tr>').join('');
+  return '<details class="mb-3"><summary><b>Petunjuk pengisian &amp; glosarium istilah</b></summary><div class="small mt-2">' +
+    '<ol><li>' + (obs ? 'Catat kejadian apa adanya, lalu bedakan kejadian yang teramati dari tafsiran Anda.' : 'Isi tanpa melihat lembar observasi pengamat, dan isi dengan jujur: lembar ini untuk melihat penerapan diferensiasi dan scaffolding, bukan menilai kinerja Anda.') + '</li>' +
+    '<li>Pilih <b>Ya</b> bila perilaku benar-benar terjadi pada pertemuan ini, <b>Tidak</b> bila tidak. Setiap jawaban Ya wajib disertai bukti: apa yang dilakukan, untuk kelompok mana, pada bagian pembelajaran mana.</li>' +
+    '<li>Pilih satu skor 1–4 per rubrik berdasarkan uraian ciri yang paling menggambarkan pembelajaran secara keseluruhan, lalu tulis alasan singkat.</li>' +
+    '<li>Ringkasan: % Ya = jumlah Ya ÷ jumlah butir × 100%. Rata-rata rubrik = jumlah skor R1–R6 ÷ 6 bila semua rubrik terisi.</li></ol>' +
+    '<table class="table table-sm"><thead><tr><th>Istilah</th><th>Padanan / penjelasan</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>';
+}
+
 function obRenderForm_() {
   const F = OB.form, I = OB.ins, obs = F.mode === 'obs', rec = F.rec || {};
   const ck = rec.Checklist || {}, ru = rec.Rubrik || {};
@@ -171,12 +189,13 @@ function obRenderForm_() {
   const dis = done ? ' disabled' : '';
   const yn = k => ['Ya', 'Tidak'].map(v => '<label class="me-3"><input type="radio" name="ck_' + k + '" value="' + v + '"' + ((ck[k] || {}).v === v ? ' checked' : '') + dis + '> ' + v + '</label>').join('');
   const butir = (k, t) => '<div class="border rounded p-2 mb-2"><div class="small mb-1"><b>' + k + '</b> ' + esc(t) + '</div><div>' + yn(k) +
-    '</div><input class="form-control form-control-sm mt-1" id="bk_' + k + '" placeholder="' + (obs ? 'Bukti singkat (wajib bila Ya)' : 'Bukti/alasan (opsional)') + '" value="' + esc((ck[k] || {}).bukti || '') + '"' + dis + '></div>';
+    '</div><input class="form-control form-control-sm mt-1" id="bk_' + k + '" placeholder="' + 'Bukti singkat (wajib bila Ya): apa yang dilakukan, untuk kelompok mana, pada bagian pembelajaran mana' + '" value="' + esc((ck[k] || {}).bukti || '') + '"' + dis + '></div>';
   let h = '<div class="card"><div class="card-header-flex"><h4 class="mb-0">' + (obs ? 'Lembar Observasi &amp; Jurnal A' : 'Penilaian Diri &amp; Jurnal B') + '</h4>' +
     '<button class="btn btn-sm btn-adaptiva-secondary" onclick="loadObservasi()"><i class="bi bi-arrow-left"></i> Kembali</button></div>';
   h += '<div class="small mb-3"><b>Sekolah:</b> ' + esc(id.sekolah) + ' · <b>Guru:</b> ' + esc(id.guru) + ' · <b>Kelas/Fase:</b> ' + esc(id.kelasFase) + ' · <b>Tanggal:</b> ' + esc(id.tanggal) + ' · <b>Pertemuan ke-:</b> ' + esc(id.pertemuanKe) + ' · <b>Pengamat:</b> ' + esc(id.observer) + '<br><b>Materi:</b> ' + esc(id.materi) +
     '<br><b>Siswa terdaftar:</b> ' + id.jumlahSiswaTerdaftar + ' · <b>Kelompok:</b> ' + (Object.keys(F.bantu.jumlahKelompok).map(k => esc(k) + ' (' + F.bantu.jumlahKelompok[k] + ')').join(', ') || '-') +
     ' · <b>Gaya belajar:</b> ' + (Object.keys(F.bantu.gaya).map(k => esc(k) + ' (' + F.bantu.gaya[k] + ')').join(', ') || '-') + '</div>';
+  h += obPetunjuk_(obs);
   if (done) h += '<div class="alert alert-success py-2">Sudah diselesaikan — hanya dapat dilihat.</div>';
   let last = '';
   I.checklist.forEach(c => { if (c.dim !== last) { h += '<h6 class="mt-3">' + esc(c.dim) + '</h6>'; last = c.dim; } h += butir(c.id, c.teks); });
