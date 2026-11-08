@@ -18,6 +18,7 @@ const kelompok = require('../lib/kelompok');
 const modulajar = require('../lib/modulajar');
 const importLib = require('../lib/import');
 const dashboard = require('../lib/dashboard');
+const observasi = require('../lib/observasi');
 const { randomUUID } = require('crypto');
 
 function ok(data, message) { return { success: true, data, message: message || 'OK' }; }
@@ -171,7 +172,18 @@ const FN_REGISTRY = {
   importSiswaWord: importLib.importSiswaWord,
   importAsesmenExcel: importLib.importAsesmenExcel,
   getDashboardData: dashboard.getDashboardData,
-  getLaporanData: dashboard.getLaporanData
+  getLaporanData: dashboard.getLaporanData,
+  getInstrumenObservasi: observasi.getInstrumenObservasi,
+  getGuruObservasi: observasi.getGuruObservasi,
+  simpanTargetObservasi: observasi.simpanTargetObservasi,
+  getJadwalObservasi: observasi.getJadwalObservasi,
+  simpanJadwalObservasi: observasi.simpanJadwalObservasi,
+  batalkanJadwalObservasi: observasi.batalkanJadwalObservasi,
+  getObservasi: observasi.getObservasi,
+  simpanObservasi: observasi.simpanObservasi,
+  getPenilaianDiri: observasi.getPenilaianDiri,
+  simpanPenilaianDiri: observasi.simpanPenilaianDiri,
+  getRekapObservasi: observasi.getRekapObservasi
 };
 
 module.exports = async (req, res) => {

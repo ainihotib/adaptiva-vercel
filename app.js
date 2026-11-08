@@ -484,15 +484,18 @@ function renderSidebarNav() {
       </ul>
     </li>`;
     html += navItem('modulAjar', 'bi-file-earmark-richtext', 'Modul Ajar Saya');
+    html += navItem('observasi', 'bi-journal-check', 'Penilaian Diri & Jurnal');
     html += navItem('laporan', 'bi-bar-chart', 'Laporan & Monitoring');
   }
   if (role === 'KepalaSekolah') {
     html += navItem('validasi', 'bi-patch-check', 'Validasi Modul Ajar');
+    html += navItem('observasi', 'bi-eye', 'Observasi Kelas');
     html += navItem('laporan', 'bi-bar-chart', 'Laporan & Monitoring');
   }
   if (role === 'Admin' || role === 'Superadmin') {
     html += navItem('akun', 'bi-people', 'Kelola Akun');
     html += navItem('bankReferensi', 'bi-bank', 'Bank Referensi');
+    html += navItem('observasi', 'bi-eye', 'Observasi & Jurnal');
     html += navItem('laporan', 'bi-bar-chart', 'Laporan & Monitoring');
     html += navItem('pengaturan', 'bi-gear', 'Pengaturan');
   }
@@ -518,7 +521,7 @@ function navigateTo(sectionId) {
     profilSiswa: loadProfilSiswaSection, kelompokBelajar: loadKelompokBelajarSection,
     cpTp: loadCPTPSection, diferensiasi: loadDiferensiasiSection, scaffolding: loadScaffoldingSection,
     modulAjar: loadModulAjarSection, validasi: loadValidasiSection, bankReferensi: loadBankReferensiSection,
-    laporan: loadLaporan, akun: loadAkunSection, pengaturan: loadPengaturanSection
+    laporan: loadLaporan, observasi: loadObservasi, akun: loadAkunSection, pengaturan: loadPengaturanSection
   };
   if (loaders[sectionId]) loaders[sectionId]();
   updateLanjutkanButton(sectionId);
