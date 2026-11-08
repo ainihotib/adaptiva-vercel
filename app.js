@@ -120,10 +120,22 @@ document.addEventListener('DOMContentLoaded', () => {
     try { savedToken = sessionStorage.getItem('adaptiva_session'); } catch (e) {}
     if (savedToken) {
       AppState.sessionToken = savedToken;
+      // Sembunyikan halaman muka dan tampilkan layar memuat selagi sesi diperiksa,
+      // supaya refresh tidak terlihat seperti kembali ke halaman login.
+      const landingEl = document.getElementById('landingScreen');
+      const ovEl = document.getElementById('loadingOverlay');
+      const kembaliKeMuka = () => {
+        AppState.sessionToken = null;
+        try { sessionStorage.removeItem('adaptiva_session'); } catch (e2) {}
+        if (landingEl) landingEl.style.display = '';
+        if (ovEl) { ovEl.style.display = 'none'; }
+      };
+      if (landingEl) landingEl.style.display = 'none';
+      if (ovEl) { ovEl.style.display = ''; ovEl.style.opacity = '1'; }
       gsRun('getCurrentUserProfile', [], res => {
         if (res.success) { AppState.profile = res.data; enterAppAfterLogin(); }
-        else { AppState.sessionToken = null; try { sessionStorage.removeItem('adaptiva_session'); } catch (e2) {} }
-      }, () => { AppState.sessionToken = null; });
+        else kembaliKeMuka();
+      }, () => { kembaliKeMuka(); });
     }
     // Kalau tidak ada sesi tersimpan, tetap di halaman muka (landing) — form Login
     // dijalankan lewat submitLogin() setelah pengguna isi email & password.
@@ -191,7 +203,9 @@ function enterAppAfterLogin() {
   renderSidebarNav();
   const savedTheme = localStorage.getItem('adaptiva_theme') || 'light';
   document.getElementById('darkModeToggle').checked = savedTheme === 'dark';
-  navigateTo('dashboard');
+  let awal = 'dashboard';
+  try { const t = sessionStorage.getItem('adaptiva_section'); if (t && document.getElementById('section-' + t)) awal = t; } catch (e) {}
+  navigateTo(awal);
 }
 
 // Dipanggil dari tombol "Keluar" di sidebar.
@@ -199,7 +213,7 @@ function logoutApp() {
   const token = AppState.sessionToken;
   AppState.sessionToken = null;
   AppState.profile = null;
-  try { sessionStorage.removeItem('adaptiva_session'); } catch (e) {}
+  try { sessionStorage.removeItem('adaptiva_session'); sessionStorage.removeItem('adaptiva_section'); } catch (e) {}
   if (!DEMO_MODE && token) gsRun('logoutUser', [token], () => {}, () => {});
   document.getElementById('sidebar').style.display = 'none';
   document.getElementById('mainContent').style.display = 'none';
@@ -493,6 +507,7 @@ function navigateTo(sectionId) {
   document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
   const target = document.getElementById('section-' + sectionId);
   if (target) target.classList.add('active');
+  try { sessionStorage.setItem('adaptiva_section', sectionId); } catch (e) {}
   document.querySelectorAll('.sidebar-nav .nav-link').forEach(l => l.classList.toggle('active', l.dataset.section === sectionId));
   document.getElementById('pageTitleMobile').textContent = sectionId;
   document.getElementById('sidebar').classList.remove('show');
@@ -948,11 +963,17 @@ function tambahSiswaInline(kelasId, namaKelas) {
     NIS: document.getElementById('fSiswaNis').value,
     JenisKelamin: document.getElementById('fSiswaJK').value
   }], res => {
-    if (res.success) openSiswaManager(kelasId, namaKelas); else showToast('Gagal', res.message, 'danger');
+    if (res.success) { openSiswaManager(kelasId, namaKelas); segarkanSetelahSiswaBerubah_(); } else showToast('Gagal', res.message, 'danger');
   });
 }
+// Setelah siswa ditambah/dihapus/diimpor, muat ulang daftar kelas (jumlah siswa) dan buang
+// pilihan data lama supaya bagian lain (Asesmen, Profil, Kelompok) tidak memakai data usang
+// dan guru tidak perlu menekan refresh.
+function segarkanSetelahSiswaBerubah_() {
+  try { loadKelasSaya(); } catch (e) {}
+}
 function hapusSiswaInline(id, kelasId, namaKelas) {
-  gsRun('hapusSiswa', [id], res => { if (res.success) openSiswaManager(kelasId, namaKelas); });
+  gsRun('hapusSiswa', [id], res => { if (res.success) { openSiswaManager(kelasId, namaKelas); segarkanSetelahSiswaBerubah_(); } });
 }
 
 function importSiswaModal(kelasId, namaKelas) {
@@ -977,7 +998,7 @@ function uploadSiswaFileNow(kelasId, namaKelas) {
   reader.onload = () => {
     const base64 = reader.result.split(',')[1];
     gsRun(fnName, [base64, file.name, kelasId], res => {
-      if (res.success) { showToast('Berhasil', res.message, 'success'); openSiswaManager(kelasId, namaKelas); }
+      if (res.success) { showToast('Berhasil', res.message, 'success'); openSiswaManager(kelasId, namaKelas); segarkanSetelahSiswaBerubah_(); }
       else showToast('Gagal', res.message, 'danger');
     });
   };
