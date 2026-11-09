@@ -765,12 +765,13 @@ function renderLaporanAdmin(data) {
   const statCards = [
     statCard('bi-person-workspace', data.totalGuru, 'Total Guru'),
     statCard('bi-person-check', data.guruAktif, 'Guru Aktif'),
+    statCard('bi-person-badge', data.totalKepsek || 0, 'Kepala Sekolah/Madrasah'),
     statCard('bi-clipboard-check', data.totalAsesmen, 'Total Asesmen Dibuat'),
     statCard('bi-file-earmark-richtext', data.totalModul, 'Total Modul Ajar')
   ].join('');
 
   const sekolahRows = (data.perSekolah || []).map(s => `<tr>
-      <td>${esc(s.sekolah)}</td><td>${s.jumlahGuru}</td><td>${s.jumlahAsesmen}</td><td>${s.jumlahModul}</td>
+      <td>${esc(s.sekolah)}</td><td>${s.jumlahGuru}</td><td>${s.jumlahKepsek || 0}</td><td>${s.jumlahAsesmen}</td><td>${s.jumlahModul}</td>
     </tr>`).join('');
 
   const guruRows = (data.perGuru || []).map(g => `<tr>
@@ -784,7 +785,7 @@ function renderLaporanAdmin(data) {
     <div class="row g-3 mb-3">${statCards}</div>
     <div class="page-eyebrow mt-2 mb-2">Rekap per sekolah/madrasah</div>
     <div class="card mb-3"><div class="card-body">
-      ${sekolahRows ? `<div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Sekolah/Madrasah</th><th>Jumlah Guru</th><th>Asesmen Dibuat</th><th>Modul Ajar</th></tr></thead><tbody>${sekolahRows}</tbody></table></div>`
+      ${sekolahRows ? `<div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Sekolah/Madrasah</th><th>Jumlah Guru</th><th>Kepala Sekolah/Madrasah</th><th>Asesmen Dibuat</th><th>Modul Ajar</th></tr></thead><tbody>${sekolahRows}</tbody></table></div>`
                     : '<p class="text-muted small mb-0">Belum ada data sekolah.</p>'}
     </div></div>
     <div class="page-eyebrow mt-4 mb-2">Rekap pemakaian per guru</div>
