@@ -175,12 +175,12 @@ const OB_GLOSARIUM = [
 ];
 function obPetunjuk_(obs) {
   const rows = OB_GLOSARIUM.map(g => '<tr><td>' + esc(g[0]) + '</td><td>' + esc(g[1]) + '</td></tr>').join('');
-  return '<details class="mb-3"><summary><b>Petunjuk pengisian &amp; glosarium istilah</b></summary><div class="small mt-2">' +
+  return '<details class="ob-help"><summary>Petunjuk pengisian &amp; glosarium istilah</summary><div class="ob-help-body">' +
     '<ol><li>' + (obs ? 'Catat kejadian apa adanya, lalu bedakan kejadian yang teramati dari tafsiran Anda.' : 'Isi tanpa melihat lembar observasi pengamat, dan isi dengan jujur: lembar ini untuk melihat penerapan diferensiasi dan scaffolding, bukan menilai kinerja Anda.') + '</li>' +
     '<li>Pilih <b>Ya</b> bila perilaku benar-benar terjadi pada pertemuan ini, <b>Tidak</b> bila tidak. Setiap jawaban Ya wajib disertai bukti: apa yang dilakukan, untuk kelompok mana, pada bagian pembelajaran mana.</li>' +
     '<li>Pilih satu skor 1–4 per rubrik berdasarkan uraian ciri yang paling menggambarkan pembelajaran secara keseluruhan, lalu tulis alasan singkat. Bila ciri yang teramati berada pada dua uraian skor, pilih skor yang lebih rendah; skor yang lebih tinggi hanya bila seluruh cirinya terpenuhi. Untuk R5, hitung dahulu jumlah langkah yang terlaksana; urutan dinilai mulai skor 3. Bila tiga atau empat langkah terlaksana tetapi urutannya tidak sesuai kebutuhan kelompok, pilih skor 2.</li>' +
     '<li>Ringkasan: % Ya = jumlah Ya ÷ jumlah butir × 100%. Rata-rata rubrik = jumlah skor R1–R6 ÷ 6 bila semua rubrik terisi.</li></ol>' +
-    '<table class="table table-sm"><thead><tr><th>Istilah</th><th>Padanan / penjelasan</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>';
+    '<table class="table table-sm ob-gl"><thead><tr><th>Istilah</th><th>Padanan / penjelasan</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>';
 }
 
 function obRenderForm_() {
@@ -190,40 +190,65 @@ function obRenderForm_() {
   const done = rec.Status === 'Selesai';
   const id = F.bantu.identitas;
   const dis = done ? ' disabled' : '';
-  const yn = k => ['Ya', 'Tidak'].map(v => '<label class="me-3"><input type="radio" name="ck_' + k + '" value="' + v + '"' + ((ck[k] || {}).v === v ? ' checked' : '') + dis + '> ' + v + '</label>').join('');
-  const butir = (k, t) => '<div class="border rounded p-2 mb-2"><div class="small mb-1"><b>' + k + '</b> ' + esc(t) + '</div><div>' + yn(k) +
-    '</div><input class="form-control form-control-sm mt-1" id="bk_' + k + '" placeholder="' + 'Bukti singkat (wajib bila Ya): apa yang dilakukan, untuk kelompok mana, pada bagian pembelajaran mana' + '" value="' + esc((ck[k] || {}).bukti || '') + '"' + dis + '></div>';
-  let h = '<div class="card"><div class="card-header-flex"><h4 class="mb-0">' + (obs ? 'Lembar Observasi &amp; Jurnal A' : 'Penilaian Diri &amp; Jurnal B') + '</h4>' +
+  const kel = Object.keys(F.bantu.jumlahKelompok || {}).map(k => esc(k) + ' (' + F.bantu.jumlahKelompok[k] + ')').join(', ') || '-';
+  const gaya = Object.keys(F.bantu.gaya || {}).map(k => esc(k) + ' (' + F.bantu.gaya[k] + ')').join(', ') || '-';
+  const meta = (l, v) => '<div class="ob-meta-item"><div class="ob-meta-l">' + l + '</div><div class="ob-meta-v">' + (v === '' || v == null ? '-' : v) + '</div></div>';
+  const yn = k => '<div class="ob-seg" role="radiogroup">' + ['Ya', 'Tidak'].map(v =>
+    '<label class="ob-seg-opt ob-seg-' + v.toLowerCase() + '"><input type="radio" name="ck_' + k + '" value="' + v + '"' + ((ck[k] || {}).v === v ? ' checked' : '') + dis + ' onchange="obToggle_(\'' + k + '\')"><span>' + v + '</span></label>').join('') + '</div>';
+  const butir = (k, t) => '<div class="ob-item" id="obi_' + k + '"><div class="ob-item-top"><span class="ob-id">' + k + '</span><div class="ob-q">' + esc(t) + '</div></div>' + yn(k) +
+    '<div class="ob-bukti" id="obb_' + k + '"><label class="ob-lbl" for="bk_' + k + '">Bukti singkat <span class="ob-req">wajib bila Ya</span></label>' +
+    '<input class="form-control" id="bk_' + k + '" placeholder="Apa yang dilakukan, untuk kelompok mana, pada bagian pembelajaran mana" value="' + esc((ck[k] || {}).bukti || '') + '"' + dis + '></div></div>';
+  const area = (lbl, idAttr, val, rows, num) => '<div class="ob-field"><label class="ob-lbl ob-lbl-lg" for="' + idAttr + '">' + (num ? '<span class="ob-num">' + num + '</span>' : '') + lbl + '</label><textarea class="form-control" rows="' + rows + '" id="' + idAttr + '"' + dis + '>' + esc(val) + '</textarea></div>';
+  const sec = (t) => '<h5 class="ob-sec">' + t + '</h5>';
+  let h = '<div class="card ob-form"><div class="ob-head"><div><div class="ob-eyebrow">' + (obs ? 'Lembar pengamat' : 'Lembar guru') + '</div><h4 class="ob-title">' + (obs ? 'Lembar Observasi &amp; Jurnal A' : 'Penilaian Diri &amp; Jurnal B') + '</h4></div>' +
     '<button class="btn btn-sm btn-adaptiva-secondary" onclick="loadObservasi()"><i class="bi bi-arrow-left"></i> Kembali</button></div>';
-  h += '<div class="small mb-3"><b>Sekolah:</b> ' + esc(id.sekolah) + ' · <b>Guru:</b> ' + esc(id.guru) + ' · <b>Kelas/Fase:</b> ' + esc(id.kelasFase) + ' · <b>Tanggal:</b> ' + esc(id.tanggal) + ' · <b>Pertemuan ke-:</b> ' + esc(id.pertemuanKe) + ' · <b>Pengamat:</b> ' + esc(id.observer) + '<br><b>Materi:</b> ' + esc(id.materi) +
-    '<br><b>Siswa terdaftar:</b> ' + id.jumlahSiswaTerdaftar + ' · <b>Kelompok:</b> ' + (Object.keys(F.bantu.jumlahKelompok).map(k => esc(k) + ' (' + F.bantu.jumlahKelompok[k] + ')').join(', ') || '-') +
-    ' · <b>Gaya belajar:</b> ' + (Object.keys(F.bantu.gaya).map(k => esc(k) + ' (' + F.bantu.gaya[k] + ')').join(', ') || '-') + '</div>';
+  h += '<div class="ob-meta">' + meta('Sekolah', esc(id.sekolah)) + meta('Guru', esc(id.guru)) + meta('Kelas / Fase', esc(id.kelasFase)) + meta('Tanggal', esc(id.tanggal)) + meta('Pertemuan ke-', esc(id.pertemuanKe)) + meta('Pengamat', esc(id.observer)) +
+    meta('Materi', esc(id.materi)) + meta('Siswa terdaftar', esc(id.jumlahSiswaTerdaftar != null ? id.jumlahSiswaTerdaftar : F.bantu.jumlahSiswaTerdaftar)) + meta('Kelompok', kel) + meta('Gaya belajar', gaya) + '</div>';
   h += obPetunjuk_(obs);
+  h += '<div class="ob-progress" id="obProg"><div class="ob-progress-txt" id="obProgTxt"></div><div class="ob-progress-bar"><div id="obProgBar"></div></div></div>';
   if (done) h += '<div class="alert alert-success py-2">Sudah diselesaikan — hanya dapat dilihat.</div>';
   let last = '';
-  I.checklist.forEach(c => { if (c.dim !== last) { h += '<h6 class="mt-3">' + esc(c.dim) + '</h6>'; last = c.dim; } h += butir(c.id, c.teks); });
-  h += '<h6 class="mt-3">KESESUAIAN DENGAN MODUL AJAR</h6>' + I.kesesuaian.map(m => butir(m.id, m.teks)).join('');
-  h += '<h6 class="mt-3">RUBRIK (skor 1–4)</h6>' + I.rubrik.map(r => {
-    const s = (ru[r.id] || {}).skor;
-    return '<div class="border rounded p-2 mb-2"><div class="small"><b>' + r.id + '</b> ' + esc(r.judul) + '</div>' +
-      [1, 2, 3, 4].map(n => '<div class="small"><label><input type="radio" name="ru_' + r.id + '" value="' + n + '"' + (String(s) === String(n) ? ' checked' : '') + dis + '> <b>' + n + '</b> — ' + esc(r.deskriptor[n]) + '</label></div>').join('') +
-      '<input class="form-control form-control-sm mt-1" id="ra_' + r.id + '" placeholder="Alasan singkat" value="' + esc((ru[r.id] || {}).alasan || '') + '"' + dis + '></div>';
+  I.checklist.forEach(c => { if (c.dim !== last) { h += sec(esc(c.dim)); last = c.dim; } h += butir(c.id, c.teks); });
+  h += sec('KESESUAIAN DENGAN MODUL AJAR') + I.kesesuaian.map(m => butir(m.id, m.teks)).join('');
+  h += sec('RUBRIK PENILAIAN <small>pilih satu skor 1–4 pada setiap rubrik</small>') + I.rubrik.map(r => {
+    const sk = (ru[r.id] || {}).skor;
+    return '<div class="ob-item ob-rub"><div class="ob-item-top"><span class="ob-id">' + r.id + '</span><div class="ob-q"><b>' + esc(r.judul) + '</b></div></div><div class="ob-opts">' +
+      [1, 2, 3, 4].map(n => '<label class="ob-opt"><input type="radio" class="ob-radio" name="ru_' + r.id + '" value="' + n + '"' + (String(sk) === String(n) ? ' checked' : '') + dis + ' onchange="obProgress_()"><span class="ob-box"></span><span class="ob-score">' + n + '</span><span class="ob-desc">' + esc(r.deskriptor[n]) + '</span></label>').join('') + '</div>' +
+      '<div class="ob-bukti" style="display:block"><label class="ob-lbl" for="ra_' + r.id + '">Alasan singkat</label><input class="form-control" id="ra_' + r.id + '" placeholder="Mengapa skor ini dipilih" value="' + esc((ru[r.id] || {}).alasan || '') + '"' + dis + '></div></div>';
   }).join('');
   if (obs) {
     const pb = (rec.Perbandingan && rec.Perbandingan.length) ? rec.Perbandingan : (F.bantu.perbandingan || []);
-    h += '<h6 class="mt-3">PERBANDINGAN RENCANA &amp; PELAKSANAAN</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Kelompok</th><th>Rencana (ADAPTIVA)</th><th>Langkah rencana</th><th>Yang terlaksana</th></tr></thead><tbody>' +
-      pb.map((p, i) => '<tr><td>' + esc(p.kelompok) + '</td><td class="small">' + esc(p.rencana) + '</td><td>' + esc(p.langkah) + '</td><td><textarea class="form-control form-control-sm" id="pb_' + i + '" rows="2"' + dis + '>' + esc(p.terlaksana || '') + '</textarea></td></tr>').join('') + '</tbody></table></div>';
+    h += sec('PERBANDINGAN RENCANA &amp; PELAKSANAAN') + '<div class="table-responsive ob-table"><table class="table"><thead><tr><th>Kelompok</th><th>Rencana (ADAPTIVA)</th><th>Langkah rencana</th><th style="min-width:220px">Yang terlaksana</th></tr></thead><tbody>' +
+      pb.map((p, i) => '<tr><td><b>' + esc(p.kelompok) + '</b></td><td>' + esc(p.rencana) + '</td><td>' + esc(p.langkah) + '</td><td><textarea class="form-control" id="pb_' + i + '" rows="3"' + dis + '>' + esc(p.terlaksana || '') + '</textarea></td></tr>').join('') + '</tbody></table></div>';
     OB.form.pb = pb;
-    h += '<h6 class="mt-3">JURNAL A — CATATAN PENGAMAT</h6>' + I.catatanObserverJurnal.map((t, i) => '<div class="mb-2"><label class="form-label small">' + esc(t) + '</label><textarea class="form-control" rows="2" id="ja_' + i + '"' + dis + '>' + esc(jr['c' + i] || '') + '</textarea></div>').join('');
-    h += '<div class="mb-2"><label class="form-label small"><b>Catatan umum</b> (dapat dibaca guru setelah penilaian dirinya selesai)</label><textarea class="form-control" rows="3" id="obCU"' + dis + '>' + esc(rec.CatatanUmum || '') + '</textarea></div>';
+    h += sec('JURNAL A — CATATAN PENGAMAT') + I.catatanObserverJurnal.map((t, i) => area(esc(t), 'ja_' + i, jr['c' + i] || '', 3, i + 1)).join('');
+    h += area('<b>Catatan umum</b> <span class="ob-hint">dapat dibaca guru setelah penilaian dirinya selesai</span>', 'obCU', rec.CatatanUmum || '', 4, '');
   } else {
-    h += '<h6 class="mt-3">JURNAL B — REFLEKSI GURU</h6>' + I.pertanyaanRefleksiGuru.map((t, i) => '<div class="mb-2"><label class="form-label small">' + (i + 1) + '. ' + esc(t) + '</label><textarea class="form-control" rows="2" id="jb_' + i + '"' + dis + '>' + esc(jr['b' + i] || '') + '</textarea></div>').join('');
+    h += sec('JURNAL B — REFLEKSI GURU') + I.pertanyaanRefleksiGuru.map((t, i) => area(esc(t), 'jb_' + i, jr['b' + i] || '', 3, i + 1)).join('');
     if (F.umpan) h += '<div class="alert alert-info mt-3"><b>Catatan pengamat (' + esc(F.umpan.observer) + ')</b><br>' + esc(F.umpan.catatanUmum || '-') + '<br><br><b>Refleksi pengamat:</b> ' + esc(F.umpan.refleksi || '-') + '</div>';
     else h += '<p class="small text-muted mt-3">Catatan pengamat akan tampil di sini setelah Anda menyelesaikan penilaian diri dan pengamat menyelesaikan lembarnya.</p>';
   }
-  if (!done) h += '<div class="mt-3"><button class="btn btn-adaptiva-secondary me-2" onclick="obSimpanForm_(\'Draft\')">Simpan draf</button><button class="btn btn-adaptiva-primary" onclick="obSimpanForm_(\'Selesai\')">Selesaikan</button></div>';
+  if (!done) h += '<div class="ob-actions"><button class="btn btn-adaptiva-secondary" onclick="obSimpanForm_(\'Draft\')">Simpan draf</button><button class="btn btn-adaptiva-primary" onclick="obSimpanForm_(\'Selesai\')">Selesaikan</button></div>';
   obSec_().innerHTML = h + '</div>';
+  I.checklist.concat(I.kesesuaian).forEach(c => obToggle_(c.id));
+  obSec_().querySelectorAll('input[type=text], textarea').forEach(el => el.addEventListener('input', obProgress_));
+  obProgress_();
   window.scrollTo(0, 0);
+}
+// Kolom bukti hanya tampil bila jawaban Ya (mengurangi kepadatan), dan penghitung kelengkapan diperbarui.
+function obToggle_(k) {
+  const r = document.querySelector('input[name="ck_' + k + '"]:checked'), b = document.getElementById('obb_' + k);
+  if (b) b.style.display = (r && r.value === 'Ya') ? 'block' : 'none';
+  obProgress_();
+}
+function obProgress_() {
+  const I = OB.ins; if (!I || !document.getElementById('obProgTxt')) return;
+  const ids = I.checklist.concat(I.kesesuaian).map(c => c.id);
+  const n1 = ids.filter(k => document.querySelector('input[name="ck_' + k + '"]:checked')).length;
+  const n2 = I.rubrik.filter(r => document.querySelector('input[name="ru_' + r.id + '"]:checked')).length;
+  const tot = ids.length + I.rubrik.length, isi = n1 + n2;
+  document.getElementById('obProgTxt').textContent = 'Terisi ' + isi + ' dari ' + tot + ' butir dan rubrik';
+  document.getElementById('obProgBar').style.width = Math.round(isi / tot * 100) + '%';
 }
 
 function obKumpul_() {
