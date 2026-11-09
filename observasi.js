@@ -1,7 +1,7 @@
 /* ============================================================
    observasi.js — Observasi Kelas + Jurnal (ADAPTIVA)
    Kepala Sekolah/Pengawas: jadwal & lembar observasi + Jurnal A
-   Guru: penilaian diri + Jurnal B (hanya pertemuan terjadwal)
+   Guru: Jurnal mandiri tiap selesai mengajar + penilaian diri (dibuka setiap 2 jurnal)
    Admin: target 20%, jadwal, rekap pengamat vs penilaian diri
    ============================================================ */
 const OB = { ins: null, role: '', tab: 'jadwal', jadwal: [], guru: [], form: null };
@@ -120,7 +120,7 @@ function obRekap_() {
     if (!res.success) { b.innerHTML = '<div class="text-danger">' + esc(res.message) + '</div>'; return; }
     const d = res.data;
     const pc = x => x ? x.persenTotal + '%' : '-';
-    const g = d.perGuru.map(x => '<tr><td>' + esc(x.Nama) + '</td><td>' + esc(x.Sekolah) + '</td><td>' + x.Target + '</td><td>' + x.Terjadwal + '</td><td>' + x.ObservasiSelesai + '</td><td>' + x.DiriSelesai + '</td><td>' + pc(x.Pengamat) + '</td><td>' + pc(x.Diri) + '</td></tr>').join('');
+    const g = d.perGuru.map(x => '<tr><td>' + esc(x.Nama) + '</td><td>' + esc(x.Sekolah) + '</td><td>' + x.Target + '</td><td>' + x.Terjadwal + '</td><td>' + x.ObservasiSelesai + '</td><td>' + x.DiriSelesai + '</td><td>' + x.JurnalSelesai + '</td><td>' + x.DiriMandiri + '</td><td>' + pc(x.Pengamat) + '</td><td>' + pc(x.Diri) + '</td></tr>').join('');
     const dt = d.detail.map(x => '<tr><td>' + esc(x.Tanggal) + '</td><td>' + esc(x.Guru) + '</td><td>' + esc(x.Kelas) + '</td><td>' + (x.Pengamat ? x.Pengamat.persenTotal + '% / ' + x.Pengamat.rubrik : '-') + '</td><td>' + (x.Diri ? x.Diri.persenTotal + '% / ' + x.Diri.rubrik : '-') + '</td></tr>').join('');
     const dim = (() => {
       const rows = d.dimensi.map((m, i) => {
@@ -129,7 +129,7 @@ function obRekap_() {
       }).join('');
       return '<table class="table table-sm"><thead><tr><th>Dimensi</th><th>Pengamat (% Ya)</th><th>Penilaian diri (% Ya)</th></tr></thead><tbody>' + rows + '</tbody></table>';
     })();
-    b.innerHTML = '<h6>Per guru</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Guru</th><th>Sekolah</th><th>Target</th><th>Terjadwal</th><th>Obs. selesai</th><th>Diri selesai</th><th>Pengamat</th><th>Diri</th></tr></thead><tbody>' + (g || '<tr><td colspan="8">Belum ada data</td></tr>') + '</tbody></table></div>' +
+    b.innerHTML = '<h6>Per guru</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Guru</th><th>Sekolah</th><th>Target</th><th>Terjadwal</th><th>Obs. selesai</th><th>Diri (banding)</th><th>Jurnal</th><th>Diri mandiri</th><th>Pengamat</th><th>Diri</th></tr></thead><tbody>' + (g || '<tr><td colspan="10">Belum ada data</td></tr>') + '</tbody></table></div>' +
       '<h6 class="mt-3">Rata-rata per dimensi</h6>' + dim +
       '<h6 class="mt-3">Per pertemuan (% Ya / rata-rata rubrik 1–4)</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Tanggal</th><th>Guru</th><th>Kelas</th><th>Pengamat</th><th>Diri</th></tr></thead><tbody>' + (dt || '<tr><td colspan="5">Belum ada data</td></tr>') + '</tbody></table></div>';
   });
@@ -138,14 +138,61 @@ function obRekap_() {
 /* ───────── Guru ───────── */
 function obGuruHome_() {
   const sec = obSec_();
-  gsRun('getJadwalObservasi', [], res => {
+  gsRun('getJurnalSaya', [], res => {
     if (!res.success) { sec.innerHTML = '<div class="card text-danger">' + esc(res.message) + '</div>'; return; }
-    const list = res.data.filter(j => j.Status !== 'Dibatalkan');
-    const rows = list.map(j => '<tr><td>' + esc(j.Tanggal) + '</td><td>' + esc(j.KelasNama) + '</td><td>' + esc(j.PertemuanKe) + '</td><td>' + esc(j.Materi) + '</td><td>' + esc(j.ObserverNama) + '</td><td>' + obBadge_(j.DiriStatus) + '</td>' +
-      '<td><button class="btn btn-sm btn-adaptiva-primary" onclick="obBukaDiri_(\'' + j.ID + '\')">' + (j.DiriStatus === 'Selesai' ? 'Lihat' : 'Isi') + '</button></td></tr>').join('');
-    sec.innerHTML = '<div class="card"><div class="card-header-flex"><h4 class="mb-0">Penilaian Diri &amp; Jurnal</h4>' + obUnduhLembar_() + '</div>' +
-      '<p class="text-muted small">Isi hanya untuk pertemuan yang dijadwalkan Kepala Sekolah/Pengawas. Catatan pengamat dapat Anda baca setelah penilaian diri Anda diselesaikan.</p>' +
-      (rows ? '<div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Tanggal</th><th>Kelas</th><th>Ke-</th><th>Materi</th><th>Pengamat</th><th>Penilaian diri</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="text-muted">Belum ada pertemuan terjadwal.</p>') + '</div>';
+    const d = res.data; OB.gj = d;
+    const rows = d.jurnal.map(j => {
+      const diri = j.DiriStatus === 'Selesai' ? '<button class="btn btn-sm btn-adaptiva-secondary" onclick="obBukaDiri_(\'' + j.ID + '\')">Lihat</button>'
+        : j.BolehDiri ? '<button class="btn btn-sm btn-adaptiva-primary" onclick="obBukaDiri_(\'' + j.ID + '\')">' + (j.DiriStatus === 'Draft' ? 'Lanjutkan' : 'Isi') + '</button>'
+        : '<span class="small text-muted" title="' + esc(j.AlasanDiri) + '"><i class="bi bi-lock"></i> Terkunci</span>';
+      return '<tr><td>' + esc(j.Tanggal) + '</td><td>' + esc(j.KelasNama) + '</td><td>' + esc(j.PertemuanKe) + '</td><td>' + esc(j.Materi) + (j.Diobservasi ? '<div class="small text-muted"><i class="bi bi-eye"></i> Diobservasi: ' + esc(j.Diobservasi) + '</div>' : '') + '</td>' +
+        '<td>' + obBadge_(j.Status) + '</td><td>' + obBadge_(j.DiriStatus) + (j.CatatanPengamat ? '<div class="small mt-1"><a href="javascript:void(0)" onclick="obBukaDiri_(\'' + j.ID + '\')">Catatan pengamat</a></div>' : '') + '</td>' +
+        '<td class="text-end text-nowrap"><button class="btn btn-sm btn-adaptiva-secondary me-1" onclick="obBukaJurnal_(\'' + j.ID + '\')">' + (j.Status === 'Selesai' ? 'Ubah jurnal' : 'Lanjutkan') + '</button>' + diri + '</td></tr>';
+    }).join('');
+    const jd = d.jadwal.length ? '<div class="alert alert-info py-2 small"><b>Pertemuan yang dijadwalkan untuk observasi:</b><br>' +
+      d.jadwal.map(j => esc(j.Tanggal) + ' · ' + esc(j.KelasNama) + (j.PertemuanKe ? ' · pertemuan ke-' + esc(j.PertemuanKe) : '') + ' · pengamat ' + esc(j.ObserverNama)).join('<br>') +
+      '<br>Isi jurnal dan penilaian diri pada tanggal tersebut seperti biasa; penilaian diri untuk pertemuan ini selalu dapat dibuka.</div>' : '';
+    sec.innerHTML = '<div class="card"><div class="card-header-flex"><h4 class="mb-0">Jurnal &amp; Penilaian Diri</h4><div>' +
+      '<button class="btn btn-adaptiva-primary" onclick="obBukaJurnal_()"><i class="bi bi-plus-lg"></i> Isi Jurnal Baru</button>' + obUnduhLembar_() + '</div></div>' +
+      '<p class="text-muted small mb-2">Isi jurnal setiap selesai melaksanakan pembelajaran (tanpa batas waktu): cukup pilih kelas dan tanggal pelaksanaan. Setiap ' + d.aturan + ' jurnal yang tersimpan membuka 1 penilaian diri.</p>' +
+      '<div class="mb-3"><span class="badge bg-success me-2">Jurnal tersimpan: ' + d.jurnalSelesai + '</span><span class="badge bg-' + (d.diriTersedia ? 'primary' : 'secondary') + '">Penilaian diri tersedia: ' + d.diriTersedia + '</span></div>' + jd +
+      (rows ? '<div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Tanggal</th><th>Kelas</th><th>Ke-</th><th>Materi</th><th>Jurnal</th><th>Penilaian diri</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="text-muted">Belum ada jurnal. Klik <b>Isi Jurnal Baru</b> setelah Anda selesai mengajar.</p>') + '</div>';
+  });
+}
+
+/* ───────── Jurnal mandiri guru ───────── */
+function obBukaJurnal_(id) {
+  const tampil = (j) => obRenderJurnal_(j);
+  if (!id) return tampil({ ID: '', Tanggal: OB.gj ? OB.gj.hariIni : '', KelasID: '', PertemuanKe: '', Materi: '', CatatanPelaksanaan: '', Status: '', JurnalB: {} });
+  gsRun('getJurnal', [id], res => { if (!res.success) { showToast('Gagal', res.message, 'danger'); return; } tampil(res.data); });
+}
+function obRenderJurnal_(j) {
+  const G = OB.gj || { kelas: [], hariIni: '', pertanyaan: OB.ins.pertanyaanRefleksiGuru };
+  const jb = j.JurnalB || {};
+  const kelasOpt = '<option value="">— Pilih kelas —</option>' + G.kelas.map(k => '<option value="' + esc(k.ID) + '"' + (k.ID === j.KelasID ? ' selected' : '') + '>' + esc(k.NamaKelas) + (k.Fase ? ' (' + esc(k.Fase) + ')' : '') + '</option>').join('');
+  const fld = (lbl, html, hint) => '<div class="ob-field"><label class="ob-lbl ob-lbl-lg">' + lbl + '</label>' + html + (hint ? '<div class="ob-hint mt-1">' + hint + '</div>' : '') + '</div>';
+  let h = '<div class="card ob-form"><div class="ob-head"><div><div class="ob-eyebrow">Jurnal guru</div><h4 class="ob-title">' + (j.ID ? 'Ubah Jurnal Pembelajaran' : 'Jurnal Pembelajaran Baru') + '</h4></div>' +
+    '<button class="btn btn-sm btn-adaptiva-secondary" onclick="loadObservasi()"><i class="bi bi-arrow-left"></i> Kembali</button></div>';
+  if (!G.kelas.length) h += '<div class="alert alert-warning">Anda belum memiliki kelas. Tambahkan kelas terlebih dahulu di menu Kelas &amp; Siswa.</div>';
+  h += '<h5 class="ob-sec">PELAKSANAAN PEMBELAJARAN</h5><div class="row g-3 mb-2">' +
+    '<div class="col-md-4">' + fld('Tanggal pelaksanaan', '<input type="date" class="form-control" id="jrTgl" max="' + esc(G.hariIni) + '" value="' + esc(j.Tanggal) + '">') + '</div>' +
+    '<div class="col-md-5">' + fld('Kelas', '<select class="form-select" id="jrKelas">' + kelasOpt + '</select>') + '</div>' +
+    '<div class="col-md-3">' + fld('Pertemuan ke-', '<input type="number" min="1" class="form-control" id="jrKe" value="' + esc(j.PertemuanKe) + '" placeholder="otomatis">', 'Kosongkan agar dihitung otomatis.') + '</div></div>' +
+    fld('Materi pembelajaran', '<input class="form-control" id="jrMateri" value="' + esc(j.Materi) + '" placeholder="Contoh: Siklus air">') +
+    fld('Catatan selama pelaksanaan pembelajaran', '<textarea class="form-control" rows="5" id="jrCatatan" placeholder="Tuliskan apa yang terjadi selama pembelajaran">' + esc(j.CatatanPelaksanaan) + '</textarea>', 'Opsional. Misalnya kejadian penting, kendala, respons siswa, atau perubahan dari rencana.');
+  h += '<h5 class="ob-sec">REFLEKSI GURU</h5>' + G.pertanyaan.map((t, i) => '<div class="ob-field"><label class="ob-lbl ob-lbl-lg" for="jb_' + i + '"><span class="ob-num">' + (i + 1) + '</span>' + esc(t) + '</label><textarea class="form-control" rows="3" id="jb_' + i + '">' + esc(jb['b' + i] || '') + '</textarea></div>').join('');
+  h += '<div class="ob-actions"><button class="btn btn-adaptiva-secondary" onclick="obSimpanJurnal_(\'Draft\')">Simpan draf</button><button class="btn btn-adaptiva-primary" onclick="obSimpanJurnal_(\'Selesai\')">Simpan jurnal</button></div></div>';
+  OB.jurnalId = j.ID || '';
+  obSec_().innerHTML = h;
+  window.scrollTo(0, 0);
+}
+function obSimpanJurnal_(status) {
+  const g = x => document.getElementById(x), o = { ID: OB.jurnalId, Status: status, Tanggal: g('jrTgl').value, KelasID: g('jrKelas').value, PertemuanKe: g('jrKe').value, Materi: g('jrMateri').value.trim(), CatatanPelaksanaan: g('jrCatatan').value.trim(), JurnalB: {} };
+  OB.ins.pertanyaanRefleksiGuru.forEach((t, i) => { o.JurnalB['b' + i] = g('jb_' + i).value.trim(); });
+  if (!o.Tanggal || !o.KelasID) { showToast('Peringatan', 'Tanggal pelaksanaan dan kelas wajib diisi.', 'warning'); return; }
+  gsRun('simpanJurnal', [o], res => {
+    if (!res.success) { showToast('Gagal', res.message, 'danger'); return; }
+    showToast('Berhasil', res.message, 'success'); loadObservasi();
   });
 }
 
@@ -157,10 +204,10 @@ function obBukaObservasi_(id) {
     obRenderForm_();
   });
 }
-function obBukaDiri_(id) {
-  gsRun('getPenilaianDiri', [id], res => {
-    if (!res.success) { showToast('Gagal', res.message, 'danger'); return; }
-    OB.form = { mode: 'diri', jadwal: res.data.jadwal, bantu: res.data.bantu, rec: res.data.penilaianDiri, umpan: res.data.umpanBalik };
+function obBukaDiri_(jurnalId) {
+  gsRun('getPenilaianDiri', [jurnalId], res => {
+    if (!res.success) { showToast('Belum dapat dibuka', res.message, 'warning'); return; }
+    OB.form = { mode: 'diri', jurnalId: jurnalId, jadwal: {}, bantu: res.data.bantu, rec: res.data.penilaianDiri, umpan: res.data.umpanBalik };
     obRenderForm_();
   });
 }
@@ -200,7 +247,7 @@ function obRenderForm_() {
     '<input class="form-control" id="bk_' + k + '" placeholder="Apa yang dilakukan, untuk kelompok mana, pada bagian pembelajaran mana" value="' + esc((ck[k] || {}).bukti || '') + '"' + dis + '></div></div>';
   const area = (lbl, idAttr, val, rows, num) => '<div class="ob-field"><label class="ob-lbl ob-lbl-lg" for="' + idAttr + '">' + (num ? '<span class="ob-num">' + num + '</span>' : '') + lbl + '</label><textarea class="form-control" rows="' + rows + '" id="' + idAttr + '"' + dis + '>' + esc(val) + '</textarea></div>';
   const sec = (t) => '<h5 class="ob-sec">' + t + '</h5>';
-  let h = '<div class="card ob-form"><div class="ob-head"><div><div class="ob-eyebrow">' + (obs ? 'Lembar pengamat' : 'Lembar guru') + '</div><h4 class="ob-title">' + (obs ? 'Lembar Observasi &amp; Jurnal A' : 'Penilaian Diri &amp; Jurnal B') + '</h4></div>' +
+  let h = '<div class="card ob-form"><div class="ob-head"><div><div class="ob-eyebrow">' + (obs ? 'Lembar pengamat' : 'Lembar guru') + '</div><h4 class="ob-title">' + (obs ? 'Lembar Observasi &amp; Jurnal A' : 'Penilaian Diri') + '</h4></div>' +
     '<button class="btn btn-sm btn-adaptiva-secondary" onclick="loadObservasi()"><i class="bi bi-arrow-left"></i> Kembali</button></div>';
   h += '<div class="ob-meta">' + meta('Sekolah', esc(id.sekolah)) + meta('Guru', esc(id.guru)) + meta('Kelas / Fase', esc(id.kelasFase)) + meta('Tanggal', esc(id.tanggal)) + meta('Pertemuan ke-', esc(id.pertemuanKe)) + meta('Pengamat', esc(id.observer)) +
     meta('Materi', esc(id.materi)) + meta('Siswa terdaftar', esc(id.jumlahSiswaTerdaftar != null ? id.jumlahSiswaTerdaftar : F.bantu.jumlahSiswaTerdaftar)) + meta('Kelompok', kel) + meta('Gaya belajar', gaya) + '</div>';
@@ -224,9 +271,8 @@ function obRenderForm_() {
     h += sec('JURNAL A — CATATAN PENGAMAT') + I.catatanObserverJurnal.map((t, i) => area(esc(t), 'ja_' + i, jr['c' + i] || '', 3, i + 1)).join('');
     h += area('<b>Catatan umum</b> <span class="ob-hint">dapat dibaca guru setelah penilaian dirinya selesai</span>', 'obCU', rec.CatatanUmum || '', 4, '');
   } else {
-    h += sec('JURNAL B — REFLEKSI GURU') + I.pertanyaanRefleksiGuru.map((t, i) => area(esc(t), 'jb_' + i, jr['b' + i] || '', 3, i + 1)).join('');
     if (F.umpan) h += '<div class="alert alert-info mt-3"><b>Catatan pengamat (' + esc(F.umpan.observer) + ')</b><br>' + esc(F.umpan.catatanUmum || '-') + '<br><br><b>Refleksi pengamat:</b> ' + esc(F.umpan.refleksi || '-') + '</div>';
-    else h += '<p class="small text-muted mt-3">Catatan pengamat akan tampil di sini setelah Anda menyelesaikan penilaian diri dan pengamat menyelesaikan lembarnya.</p>';
+    else if (F.bantu.identitas.observer && F.bantu.identitas.observer !== '-') h += '<p class="small text-muted mt-3">Pertemuan ini diobservasi. Catatan pengamat akan tampil di sini setelah Anda menyelesaikan penilaian diri dan pengamat menyelesaikan lembarnya.</p>';
   }
   if (!done) h += '<div class="ob-actions"><button class="btn btn-adaptiva-secondary" onclick="obSimpanForm_(\'Draft\')">Simpan draf</button><button class="btn btn-adaptiva-primary" onclick="obSimpanForm_(\'Selesai\')">Selesaikan</button></div>';
   obSec_().innerHTML = h + '</div>';
@@ -262,13 +308,11 @@ function obKumpul_() {
     const s = document.querySelector('input[name="ru_' + r.id + '"]:checked');
     rubrik[r.id] = { skor: s ? Number(s.value) : 0, alasan: document.getElementById('ra_' + r.id).value.trim() };
   });
-  const o = { JadwalID: OB.form.jadwal.ID, Checklist: checklist, Rubrik: rubrik };
+  const o = obs ? { JadwalID: OB.form.jadwal.ID, Checklist: checklist, Rubrik: rubrik } : { JurnalID: OB.form.jurnalId, Checklist: checklist, Rubrik: rubrik };
   if (obs) {
     o.Perbandingan = (OB.form.pb || []).map((p, i) => Object.assign({}, p, { terlaksana: document.getElementById('pb_' + i).value.trim() }));
     o.JurnalA = {}; I.catatanObserverJurnal.forEach((t, i) => { o.JurnalA['c' + i] = document.getElementById('ja_' + i).value.trim(); });
     o.CatatanUmum = document.getElementById('obCU').value.trim();
-  } else {
-    o.JurnalB = {}; I.pertanyaanRefleksiGuru.forEach((t, i) => { o.JurnalB['b' + i] = document.getElementById('jb_' + i).value.trim(); });
   }
   return o;
 }
@@ -279,6 +323,6 @@ function obSimpanForm_(status) {
     if (!res.success) { showToast('Gagal', res.message, 'danger'); return; }
     showToast('Berhasil', res.message, 'success');
     if (status === 'Selesai') loadObservasi();
-    else (OB.form.mode === 'obs' ? obBukaObservasi_ : obBukaDiri_)(OB.form.jadwal.ID);
+    else if (OB.form.mode === 'obs') obBukaObservasi_(OB.form.jadwal.ID); else obBukaDiri_(OB.form.jurnalId);
   });
 }

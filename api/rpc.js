@@ -271,6 +271,9 @@ const FN_REGISTRY = {
   batalkanJadwalObservasi: observasi.batalkanJadwalObservasi,
   getObservasi: observasi.getObservasi,
   simpanObservasi: observasi.simpanObservasi,
+  getJurnalSaya: observasi.getJurnalSaya,
+  getJurnal: observasi.getJurnal,
+  simpanJurnal: observasi.simpanJurnal,
   getPenilaianDiri: observasi.getPenilaianDiri,
   simpanPenilaianDiri: observasi.simpanPenilaianDiri,
   getRekapObservasi: observasi.getRekapObservasi

@@ -484,7 +484,7 @@ function renderSidebarNav() {
       </ul>
     </li>`;
     html += navItem('modulAjar', 'bi-file-earmark-richtext', 'Modul Ajar Saya');
-    html += navItem('observasi', 'bi-journal-check', 'Penilaian Diri & Jurnal');
+    html += navItem('observasi', 'bi-journal-check', 'Jurnal & Penilaian Diri');
     html += navItem('laporan', 'bi-bar-chart', 'Laporan & Monitoring');
   }
   if (role === 'KepalaSekolah') {
