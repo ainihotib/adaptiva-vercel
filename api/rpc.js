@@ -91,6 +91,72 @@ async function hapusAkun(sessionToken, [id]) {
   return ok(true, 'Akun dihapus.');
 }
 
+// Ubah data akun (nama, sapaan, email, peran, sekolah). Pengaman:
+// - akun Superadmin hanya dapat diubah Superadmin; akun Admin hanya oleh Superadmin,
+// - akun sendiri: email dan peran tidak dapat diubah (agar tidak terkunci dari sistem),
+// - peran Superadmin tidak dapat diberikan lewat aplikasi, peran Admin hanya oleh Superadmin,
+// - email harus valid dan belum dipakai akun lain.
+// Bila email berubah, kolom email pada data kerja (kelas, modul ajar, validasi, observasi, dst.)
+// ikut dipindahkan ke email baru supaya data pengguna tidak yatim.
+async function ubahAkun(sessionToken, [id, data]) {
+  const user = await auth.requireRole(sessionToken, [auth.ROLE.SUPERADMIN, auth.ROLE.ADMIN]);
+  data = data || {};
+  const existing = await sheets.findOne('Users', 'ID', id);
+  if (!existing) return fail('Akun tidak ditemukan.');
+  const lc = v => String(v == null ? '' : v).trim().toLowerCase();
+  const diriSendiri = existing.ID === user.ID || lc(existing.Email) === lc(user.Email);
+  if ((existing.Peran === auth.ROLE.SUPERADMIN || existing.Peran === auth.ROLE.ADMIN) && user.Peran !== auth.ROLE.SUPERADMIN) {
+    return fail('Hanya Superadmin yang dapat mengubah akun Admin atau Superadmin.');
+  }
+  const nama = String(data.Nama == null ? existing.Nama : data.Nama).trim();
+  const sekolah = String(data.Sekolah == null ? existing.Sekolah : data.Sekolah).trim();
+  const sapaan = String(data.Sapaan == null ? existing.Sapaan : data.Sapaan).trim();
+  const email = data.Email == null ? lc(existing.Email) : lc(data.Email);
+  const peran = data.Peran == null ? existing.Peran : data.Peran;
+  if (!nama) return fail('Nama wajib diisi.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Format email tidak valid.');
+  const emailBerubah = email !== lc(existing.Email);
+  const peranBerubah = peran !== existing.Peran;
+  if (diriSendiri && (emailBerubah || peranBerubah)) return fail('Email dan peran akun Anda sendiri tidak dapat diubah dari sini.');
+  if (peranBerubah) {
+    if (existing.Peran === auth.ROLE.SUPERADMIN || peran === auth.ROLE.SUPERADMIN) return fail('Peran Superadmin tidak dapat diubah lewat aplikasi.');
+    if (peran === auth.ROLE.ADMIN && user.Peran !== auth.ROLE.SUPERADMIN) return fail('Hanya Superadmin yang dapat menjadikan akun sebagai Admin.');
+    if ([auth.ROLE.GURU, auth.ROLE.KEPSEK, auth.ROLE.ADMIN].indexOf(peran) === -1) return fail('Peran tidak dikenal.');
+    if (peran === auth.ROLE.GURU) {
+      const totalGuru = (await sheets.findMany('Users', 'Peran', auth.ROLE.GURU)).length;
+      if (totalGuru >= 100) return fail('Batas maksimal 100 guru terdaftar sudah tercapai.');
+    }
+  }
+  if (emailBerubah) {
+    const semua = await sheets.getAllData('Users');
+    if (semua.some(u => u.ID !== existing.ID && lc(u.Email) === email)) return fail('Email sudah dipakai akun lain.');
+  }
+  const emailLama = lc(existing.Email);
+  const rec = await sheets.updateRecord('Users', Object.assign({}, existing, { Nama: nama, Sekolah: sekolah, Sapaan: sapaan, Email: emailBerubah ? email : existing.Email, Peran: peran }));
+  let dipindah = 0;
+  if (emailBerubah || nama !== existing.Nama) {
+    for (const nm of Object.keys(sheets.SHEET_DEFS)) {
+      if (nm === 'Users') continue;
+      const headers = sheets.SHEET_DEFS[nm];
+      const kolomEmail = headers.filter(h => /Email$/.test(h));
+      if (!kolomEmail.length || headers.indexOf('ID') === -1) continue;
+      let rows = [];
+      try { rows = await sheets.getAllData(nm); } catch (e) { continue; }
+      for (const r of rows) {
+        let ubah = false;
+        kolomEmail.forEach(h => {
+          if (lc(r[h]) !== emailLama) return;
+          if (emailBerubah) { r[h] = email; ubah = true; }
+          const kolomNama = h === 'GuruEmail' ? 'GuruNama' : (h === 'ObserverEmail' ? 'ObserverNama' : '');
+          if (kolomNama && headers.indexOf(kolomNama) !== -1 && nama !== existing.Nama) { r[kolomNama] = nama; ubah = true; }
+        });
+        if (ubah) { await sheets.updateRecord(nm, r); dipindah++; }
+      }
+    }
+  }
+  return ok(rec, dipindah ? 'Akun diperbarui; ' + dipindah + ' data terkait ikut disesuaikan.' : 'Akun diperbarui.');
+}
+
 // ── Master Data: Kelas & Siswa ──
 async function getKelasSaya(sessionToken) {
   const user = await auth.requireRole(sessionToken, null);
@@ -146,7 +212,7 @@ const FN_REGISTRY = {
   loginWithGoogle: async (token, [idToken]) => auth.loginWithGoogle(idToken),
   getCurrentUserProfile: async (token) => auth.getCurrentUserProfile(token),
   setPeranPreview: async (token, [roleBaru]) => ok(await auth.setPeranPreview(token, roleBaru)),
-  daftarkanAkun, getDaftarAkun, ubahStatusAkun, hapusAkun, getDaftarValidator,
+  daftarkanAkun, getDaftarAkun, ubahStatusAkun, hapusAkun, ubahAkun, getDaftarValidator,
   getKelasSaya, simpanKelas, hapusKelas,
   getSiswaByKelas, simpanSiswa, hapusSiswa,
   buatAsesmen: asesmen.buatAsesmen,

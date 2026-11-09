@@ -2243,12 +2243,15 @@ function loadAkunSection() {
   gsRun('getDaftarAkun', [], res => {
     const list = res.data || [];
     const me = AppState.profile || {};
+    window._akunList = {}; list.forEach(u => { window._akunList[u.ID] = u; });
+    const bolehUbah = u => (u.Peran !== 'Superadmin' && u.Peran !== 'Admin') || me.Peran === 'Superadmin';
     const bolehHapus = u => u.Peran !== 'Superadmin' && u.ID !== me.ID && String(u.Email).toLowerCase() !== String(me.Email || '').toLowerCase() && (u.Peran !== 'Admin' || me.Peran === 'Superadmin');
     const rows = list.map(u => `<tr><td>${esc(u.Sapaan ? u.Sapaan + ' ' + u.Nama : u.Nama)}</td><td>${esc(u.Email)}</td><td>${esc(u.Peran)}</td><td>${esc(u.Sekolah)}</td>
       <td><span class="badge-status ${u.Status === 'Aktif' ? 'tervalidasi' : 'draft'}">${esc(u.Status)}</span></td>
       <td class="text-end">
         <button class="btn btn-sm btn-adaptiva-ghost" onclick="ubahPasswordAkunModal('${u.ID}','${esc(u.Nama)}')" title="Ubah Password"><i class="bi bi-key"></i></button>
         <button class="btn btn-sm btn-adaptiva-ghost" onclick="ubahStatusAkunNow('${u.ID}','${u.Status === 'Aktif' ? 'Nonaktif' : 'Aktif'}')">${u.Status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button>
+        ${bolehUbah(u) ? `<button class="btn btn-sm btn-adaptiva-ghost" onclick="ubahAkunModal('${u.ID}')" title="Edit akun"><i class="bi bi-pencil-square"></i></button>` : ''}
         ${bolehHapus(u) ? `<button class="btn btn-sm btn-adaptiva-ghost text-danger" onclick="hapusAkunModal('${u.ID}','${esc(u.Nama)}')" title="Hapus akun"><i class="bi bi-trash"></i></button>` : ''}
       </td></tr>`).join('');
     document.getElementById('section-akun').innerHTML = `
@@ -2287,6 +2290,33 @@ function daftarkanAkunNow() {
 }
 function ubahStatusAkunNow(id, status) {
   gsRun('ubahStatusAkun', [id, status], res => { if (res.success) loadAkunSection(); });
+}
+function ubahAkunModal(id) {
+  const u = (window._akunList || {})[id]; if (!u) return;
+  const me = AppState.profile || {}, diri = u.ID === me.ID || String(u.Email).toLowerCase() === String(me.Email || '').toLowerCase();
+  const kunci = diri || u.Peran === 'Superadmin';
+  const opsiPeran = [['Guru', 'Guru'], ['KepalaSekolah', 'Kepala Sekolah/Madrasah & Pengawas']].concat(me.Peran === 'Superadmin' ? [['Admin', 'Admin']] : []);
+  if (u.Peran === 'Superadmin') opsiPeran.push(['Superadmin', 'Superadmin']);
+  openModal('Edit Akun', `
+    <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" id="eEmailAkun" value="${esc(u.Email)}" ${kunci ? 'disabled' : ''}>
+      <div class="form-text">${kunci ? 'Email dan peran akun Anda sendiri tidak dapat diubah dari sini.' : 'Ubah bila salah ketik. Data kelas, modul, dan observasi akun ini ikut dipindahkan ke email baru; pengguna harus masuk dengan email baru.'}</div></div>
+    <div class="mb-3"><label class="form-label">Sapaan</label><select class="form-select" id="eSapaanAkun">
+      <option value="Ibu" ${u.Sapaan === 'Ibu' ? 'selected' : ''}>Ibu</option><option value="Bapak" ${u.Sapaan === 'Bapak' ? 'selected' : ''}>Bapak</option>
+      ${u.Sapaan && u.Sapaan !== 'Ibu' && u.Sapaan !== 'Bapak' ? '<option value="' + esc(u.Sapaan) + '" selected>' + esc(u.Sapaan) + '</option>' : ''}</select></div>
+    <div class="mb-3"><label class="form-label">Nama Lengkap</label><input class="form-control" id="eNamaAkun" value="${esc(u.Nama)}"></div>
+    <div class="mb-3"><label class="form-label">Peran</label><select class="form-select" id="ePeranAkun" ${kunci ? 'disabled' : ''}>
+      ${opsiPeran.map(o => '<option value="' + o[0] + '" ' + (u.Peran === o[0] ? 'selected' : '') + '>' + esc(o[1]) + '</option>').join('')}</select></div>
+    <div class="mb-3"><label class="form-label">Sekolah/Madrasah</label><input class="form-control" id="eSekolahAkun" value="${esc(u.Sekolah)}"></div>`,
+    `<button class="btn btn-adaptiva-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-adaptiva-primary" onclick="ubahAkunNow('${u.ID}')">Simpan</button>`);
+}
+function ubahAkunNow(id) {
+  const g = x => document.getElementById(x);
+  const data = { Email: g('eEmailAkun').value.trim(), Sapaan: g('eSapaanAkun').value, Nama: g('eNamaAkun').value.trim(), Peran: g('ePeranAkun').value, Sekolah: g('eSekolahAkun').value.trim() };
+  if (!data.Nama || !data.Email) { showToast('Peringatan', 'Email dan nama wajib diisi.', 'warning'); return; }
+  gsRun('ubahAkun', [id, data], res => {
+    if (res.success) { showToast('Berhasil', res.message, 'success'); closeModal(); loadAkunSection(); }
+    else showToast('Gagal', res.message, 'danger');
+  });
 }
 function hapusAkunModal(id, nama) {
   openModal('Hapus Akun', `
