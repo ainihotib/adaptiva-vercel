@@ -179,7 +179,7 @@ function obRenderJurnal_(j) {
     '<div class="col-md-5">' + fld('Kelas', '<select class="form-select" id="jrKelas">' + kelasOpt + '</select>') + '</div>' +
     '<div class="col-md-3">' + fld('Pertemuan ke-', '<input type="number" min="1" class="form-control" id="jrKe" value="' + esc(j.PertemuanKe) + '" placeholder="otomatis">') + '</div></div>' +
     fld('Materi', '<input class="form-control" id="jrMateri" value="' + esc(j.Materi) + '" placeholder="Contoh: Siklus air">') +
-    fld('Catatan selama pelaksanaan pembelajaran', '<textarea class="form-control" rows="5" id="jrCatatan" placeholder="Tuliskan apa yang terjadi selama pembelajaran">' + esc(j.CatatanPelaksanaan) + '</textarea>', 'Opsional. Misalnya kejadian penting, kendala, respons siswa, atau perubahan dari rencana.');
+    fld('Catatan selama pelaksanaan pembelajaran', '<textarea class="form-control" rows="5" id="jrCatatan" placeholder="Tuliskan apa yang terjadi selama pembelajaran">' + esc(j.CatatanPelaksanaan) + '</textarea>', 'Minimal 10 kata. Misalnya kejadian penting, kendala, respons siswa, atau perubahan dari rencana.');
   const I = OB.ins, KEL = I.jurnalKelompok;
   const ta = (id, v, ph) => '<textarea class="form-control form-control-sm" rows="3" id="' + id + '" placeholder="' + esc(ph || '') + '">' + esc(v) + '</textarea>';
   const t1 = (jb.t1 && jb.t1.length ? jb.t1 : KEL.map(k => ({ c0: k })));
@@ -188,9 +188,9 @@ function obRenderJurnal_(j) {
     [1, 2, 3].map(c => '<div class="col-md-4"><label class="ob-lbl">' + esc(hd[c]) + '</label>' + (langkah && c === 1
       ? '<select class="form-select form-select-sm" id="' + tid + '_' + i + '_1"><option value="">— Pilih —</option>' + I.jurnalLangkah.map(l => '<option' + (r.c1 === l ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select>'
       : ta(tid + '_' + i + '_' + c, r['c' + c])) + '</div>').join('') + '</div></div>').join('');
-  h += '<h5 class="ob-sec">1. RENCANA DAN PELAKSANAAN PER KELOMPOK</h5>' + kartu(t1, 't1', I.jurnalTabel1, false);
-  h += '<h5 class="ob-sec">2. SCAFFOLDING YANG SAYA BERIKAN</h5>' + kartu(t2, 't2', I.jurnalTabel2, true);
-  h += '<h5 class="ob-sec">3. PERTANYAAN REFLEKSI</h5>' + G.pertanyaan.map((t, i) => '<div class="ob-field"><label class="ob-lbl ob-lbl-lg" for="jb_' + i + '"><span class="ob-num">' + (i + 1) + '</span>' + esc(t) + '</label><textarea class="form-control" rows="3" id="jb_' + i + '">' + esc(jb['b' + i] || '') + '</textarea></div>').join('');
+  h += '<h5 class="ob-sec">1. RENCANA DAN PELAKSANAAN PER KELOMPOK</h5><p class="ob-hint">Isi minimal satu kelompok; tiap kotak minimal 10 kata. Kelompok yang tidak ada di kelas Anda boleh dikosongkan.</p>' + kartu(t1, 't1', I.jurnalTabel1, false);
+  h += '<h5 class="ob-sec">2. SCAFFOLDING YANG SAYA BERIKAN</h5><p class="ob-hint">Isi minimal satu kelompok; tiap kotak minimal 10 kata.</p>' + kartu(t2, 't2', I.jurnalTabel2, true);
+  h += '<h5 class="ob-sec">3. PERTANYAAN REFLEKSI</h5><p class="ob-hint">Tiap jawaban minimal 10 kata.</p>' + G.pertanyaan.map((t, i) => '<div class="ob-field"><label class="ob-lbl ob-lbl-lg" for="jb_' + i + '"><span class="ob-num">' + (i + 1) + '</span>' + esc(t) + '</label><textarea class="form-control" rows="3" id="jb_' + i + '">' + esc(jb['b' + i] || '') + '</textarea></div>').join('');
   h += '<div class="ob-actions"><button class="btn btn-adaptiva-secondary" onclick="obSimpanJurnal_(\'Draft\')">Simpan draf</button><button class="btn btn-adaptiva-primary" onclick="obSimpanJurnal_(\'Selesai\')">Simpan jurnal</button></div></div>';
   OB.jurnalId = j.ID || '';
   obSec_().innerHTML = h;
