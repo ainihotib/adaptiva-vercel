@@ -177,8 +177,8 @@ function obRenderJurnal_(j) {
   h += '<h5 class="ob-sec">PELAKSANAAN PEMBELAJARAN</h5><div class="row g-3 mb-2">' +
     '<div class="col-md-4">' + fld('Tanggal pelaksanaan', '<input type="date" class="form-control" id="jrTgl" max="' + esc(G.hariIni) + '" value="' + esc(j.Tanggal) + '">') + '</div>' +
     '<div class="col-md-5">' + fld('Kelas', '<select class="form-select" id="jrKelas">' + kelasOpt + '</select>') + '</div>' +
-    '<div class="col-md-3">' + fld('Pertemuan ke-', '<input type="number" min="1" class="form-control" id="jrKe" value="' + esc(j.PertemuanKe) + '" placeholder="otomatis">', 'Kosongkan agar dihitung otomatis.') + '</div></div>' +
-    fld('Materi dan TP', '<input class="form-control" id="jrMateri" value="' + esc(j.Materi) + '" placeholder="Contoh: Siklus air — TP: menjelaskan tahapan siklus air">') +
+    '<div class="col-md-3">' + fld('Pertemuan ke-', '<input type="number" min="1" class="form-control" id="jrKe" value="' + esc(j.PertemuanKe) + '" placeholder="otomatis">') + '</div></div>' +
+    fld('Materi', '<input class="form-control" id="jrMateri" value="' + esc(j.Materi) + '" placeholder="Contoh: Siklus air">') +
     fld('Catatan selama pelaksanaan pembelajaran', '<textarea class="form-control" rows="5" id="jrCatatan" placeholder="Tuliskan apa yang terjadi selama pembelajaran">' + esc(j.CatatanPelaksanaan) + '</textarea>', 'Opsional. Misalnya kejadian penting, kendala, respons siswa, atau perubahan dari rencana.');
   const I = OB.ins, KEL = I.jurnalKelompok;
   const ta = (id, v, ph) => '<textarea class="form-control form-control-sm" rows="3" id="' + id + '" placeholder="' + esc(ph || '') + '">' + esc(v) + '</textarea>';
