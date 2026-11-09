@@ -144,7 +144,7 @@ function obGuruHome_() {
     const rows = d.jurnal.map(j => {
       const diri = j.DiriStatus === 'Selesai' ? '<button class="btn btn-sm btn-adaptiva-secondary" onclick="obBukaDiri_(\'' + j.ID + '\')">Lihat</button>'
         : j.BolehDiri ? '<button class="btn btn-sm btn-adaptiva-primary" onclick="obBukaDiri_(\'' + j.ID + '\')">' + (j.DiriStatus === 'Draft' ? 'Lanjutkan' : 'Isi') + '</button>'
-        : '<span class="small text-muted" title="' + esc(j.AlasanDiri) + '"><i class="bi bi-lock"></i> Terkunci</span>';
+        : '<button class="btn btn-sm btn-outline-secondary" disabled style="opacity:.55" title="' + esc(j.AlasanDiri) + '"><i class="bi bi-lock"></i> Isi</button>';
       return '<tr><td>' + esc(j.Tanggal) + '</td><td>' + esc(j.KelasNama) + '</td><td>' + esc(j.PertemuanKe) + '</td><td>' + esc(j.Materi) + (j.Diobservasi ? '<div class="small text-muted"><i class="bi bi-eye"></i> Diobservasi: ' + esc(j.Diobservasi) + '</div>' : '') + '</td>' +
         '<td>' + obBadge_(j.Status) + '</td><td>' + obBadge_(j.DiriStatus) + (j.CatatanPengamat ? '<div class="small mt-1"><a href="javascript:void(0)" onclick="obBukaDiri_(\'' + j.ID + '\')">Catatan pengamat</a></div>' : '') + '</td>' +
         '<td class="text-end text-nowrap"><button class="btn btn-sm btn-adaptiva-secondary me-1" onclick="obBukaJurnal_(\'' + j.ID + '\')">' + (j.Status === 'Selesai' ? 'Ubah jurnal' : 'Lanjutkan') + '</button>' + diri + '</td></tr>';
@@ -154,7 +154,7 @@ function obGuruHome_() {
       '<br>Isi jurnal dan penilaian diri pada tanggal tersebut seperti biasa; penilaian diri untuk pertemuan ini selalu dapat dibuka.</div>' : '';
     sec.innerHTML = '<div class="card"><div class="card-header-flex"><h4 class="mb-0">Jurnal &amp; Penilaian Diri</h4><div>' +
       '<button class="btn btn-adaptiva-primary" onclick="obBukaJurnal_()"><i class="bi bi-plus-lg"></i> Isi Jurnal Baru</button>' + obUnduhLembar_() + '</div></div>' +
-      '<p class="text-muted small mb-2">Isi jurnal setiap selesai melaksanakan pembelajaran (tanpa batas waktu): cukup pilih kelas dan tanggal pelaksanaan. Setiap ' + d.aturan + ' jurnal yang tersimpan membuka 1 penilaian diri.</p>' +
+      '<p class="text-muted small mb-2">Isi jurnal setiap selesai melaksanakan pembelajaran (tanpa batas waktu): cukup pilih kelas dan tanggal pelaksanaan. Penilaian diri dapat diisi pada jurnal pertemuan ke-2, ke-4, dan seterusnya ; jurnal pertemuan ganjil tidak aktif (abu-abu).</p>' +
       '<div class="mb-3"><span class="badge bg-success me-2">Jurnal tersimpan: ' + d.jurnalSelesai + '</span><span class="badge bg-' + (d.diriTersedia ? 'primary' : 'secondary') + '">Penilaian diri tersedia: ' + d.diriTersedia + '</span></div>' + jd +
       (rows ? '<div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Tanggal</th><th>Kelas</th><th>Ke-</th><th>Materi</th><th>Jurnal</th><th>Penilaian diri</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="text-muted">Belum ada jurnal. Klik <b>Isi Jurnal Baru</b> setelah Anda selesai mengajar.</p>') + '</div>';
   });
@@ -212,7 +212,7 @@ function obTabelJurnal_(ambilDariLayar) {
   const info = aktif ? '<p class="ob-hint">Kelompok yang tampil sesuai hasil asesmen kelas ini (kelompok tanpa siswa tidak ditampilkan). Semua kelompok yang tampil wajib diisi; tiap kotak minimal 10 kata.</p>'
     : '<div class="alert alert-warning py-2">Kelas ini belum memiliki hasil pengelompokan dari asesmen diagnostik, sehingga semua kelompok ditampilkan. Isi minimal satu kelompok.</div>';
   box.innerHTML = '<h5 class="ob-sec">1. RENCANA DAN PELAKSANAAN PER KELOMPOK</h5>' + info + '<p class="ob-hint">"Alasan bila berbeda" boleh singkat atau dikosongkan jika sesuai rencana.</p>' + kartu('t1', I.jurnalTabel1, false) +
-    '<h5 class="ob-sec">2. SCAFFOLDING YANG SAYA BERIKAN</h5>' + kartu('t2', I.jurnalTabel2, true);
+    '<h5 class="ob-sec">2. SCAFFOLDING YANG DIBERIKAN GURU</h5>' + kartu('t2', I.jurnalTabel2, true);
 }
 function obSimpanJurnal_(status) {
   const g = x => document.getElementById(x), o = { ID: OB.jurnalId, Status: status, Tanggal: g('jrTgl').value, KelasID: g('jrKelas').value, PertemuanKe: g('jrKe').value, Materi: g('jrMateri').value.trim(), CatatanPelaksanaan: g('jrCatatan').value.trim(), JurnalB: {} };
