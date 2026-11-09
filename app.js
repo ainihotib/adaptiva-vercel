@@ -763,11 +763,11 @@ function renderLaporanKepsek(data) {
 
 function renderLaporanAdmin(data) {
   const statCards = [
-    statCard('bi-person-workspace', data.totalGuru, 'Total Guru'),
-    statCard('bi-person-check', data.guruAktif, 'Guru Aktif'),
-    statCard('bi-person-badge', data.totalKepsek || 0, 'Kepala Sekolah/Madrasah'),
-    statCard('bi-clipboard-check', data.totalAsesmen, 'Total Asesmen Dibuat'),
-    statCard('bi-file-earmark-richtext', data.totalModul, 'Total Modul Ajar')
+    statCard('bi-person-workspace', data.totalGuru, 'Total Guru', 'col-6 col-md'),
+    statCard('bi-person-check', data.guruAktif, 'Guru Aktif', 'col-6 col-md'),
+    statCard('bi-person-badge', data.totalKepsek || 0, 'Kepala Sekolah/Madrasah', 'col-6 col-md'),
+    statCard('bi-clipboard-check', data.totalAsesmen, 'Total Asesmen Dibuat', 'col-6 col-md'),
+    statCard('bi-file-earmark-richtext', data.totalModul, 'Total Modul Ajar', 'col-6 col-md')
   ].join('');
 
   const sekolahRows = (data.perSekolah || []).map(s => `<tr>
@@ -795,8 +795,8 @@ function renderLaporanAdmin(data) {
     </div></div>`;
 }
 
-function statCard(icon, value, label) {
-  return `<div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon"><i class="bi ${icon}"></i></div><div class="stat-value">${esc(value)}</div><div class="stat-label">${esc(label)}</div></div></div>`;
+function statCard(icon, value, label, cls) {
+  return `<div class="${cls || 'col-6 col-md-3'}"><div class="stat-card"><div class="stat-icon"><i class="bi ${icon}"></i></div><div class="stat-value">${esc(value)}</div><div class="stat-label">${esc(label)}</div></div></div>`;
 }
 
 // type: 'doughnut' | 'pie' | 'bar' — dipilih sesuai karakter data (lihat pemanggilan di renderDashboard).
