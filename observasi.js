@@ -154,7 +154,7 @@ function obGuruHome_() {
       '<br>Isi jurnal dan penilaian diri pada tanggal tersebut seperti biasa; penilaian diri untuk pertemuan ini selalu dapat dibuka.</div>' : '';
     sec.innerHTML = '<div class="card"><div class="card-header-flex"><h4 class="mb-0">Jurnal &amp; Penilaian Diri</h4><div>' +
       '<button class="btn btn-adaptiva-primary" onclick="obBukaJurnal_()"><i class="bi bi-plus-lg"></i> Isi Jurnal Baru</button>' + obUnduhLembar_() + '</div></div>' +
-      '<p class="text-muted small mb-2">Isi jurnal setiap selesai melaksanakan pembelajaran (tanpa batas waktu): cukup pilih kelas dan tanggal pelaksanaan. Penilaian diri dapat diisi pada jurnal pertemuan ke-2, ke-4, dan seterusnya ; jurnal pertemuan ganjil tidak aktif (abu-abu).</p>' +
+      '<p class="text-muted small mb-2">Isi jurnal setiap selesai melaksanakan pembelajaran (tanpa batas waktu): cukup pilih kelas dan tanggal pelaksanaan. Penilaian diri dapat diisi pada jurnal pertemuan ke-2, ke-4, dan seterusnya; jurnal pertemuan ganjil tidak aktif (abu-abu).</p>' +
       '<div class="mb-3"><span class="badge bg-success me-2">Jurnal tersimpan: ' + d.jurnalSelesai + '</span><span class="badge bg-' + (d.diriTersedia ? 'primary' : 'secondary') + '">Penilaian diri tersedia: ' + d.diriTersedia + '</span></div>' + jd +
       (rows ? '<div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Tanggal</th><th>Kelas</th><th>Ke-</th><th>Materi</th><th>Jurnal</th><th>Penilaian diri</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="text-muted">Belum ada jurnal. Klik <b>Isi Jurnal Baru</b> setelah Anda selesai mengajar.</p>') + '</div>';
   });
