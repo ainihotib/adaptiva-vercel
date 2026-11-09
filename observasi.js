@@ -212,7 +212,7 @@ function obTabelJurnal_(ambilDariLayar) {
   const info = aktif ? '<p class="ob-hint">Kelompok yang tampil sesuai hasil asesmen kelas ini (kelompok tanpa siswa tidak ditampilkan). Semua kelompok yang tampil wajib diisi; tiap kotak minimal 10 kata.</p>'
     : '<div class="alert alert-warning py-2">Kelas ini belum memiliki hasil pengelompokan dari asesmen diagnostik, sehingga semua kelompok ditampilkan. Isi minimal satu kelompok.</div>';
   box.innerHTML = '<h5 class="ob-sec">1. RENCANA DAN PELAKSANAAN PER KELOMPOK</h5>' + info + '<p class="ob-hint">"Alasan bila berbeda" boleh singkat atau dikosongkan jika sesuai rencana.</p>' + kartu('t1', I.jurnalTabel1, false) +
-    '<h5 class="ob-sec">2. SCAFFOLDING YANG DIBERIKAN GURU</h5>' + kartu('t2', I.jurnalTabel2, true);
+    '<h5 class="ob-sec">2. SCAFFOLDING YANG SAYA BERIKAN</h5>' + kartu('t2', I.jurnalTabel2, true);
 }
 function obSimpanJurnal_(status) {
   const g = x => document.getElementById(x), o = { ID: OB.jurnalId, Status: status, Tanggal: g('jrTgl').value, KelasID: g('jrKelas').value, PertemuanKe: g('jrKe').value, Materi: g('jrMateri').value.trim(), CatatanPelaksanaan: g('jrCatatan').value.trim(), JurnalB: {} };
@@ -265,8 +265,13 @@ function obPetunjuk_(obs) {
     '<table class="table table-sm ob-gl"><thead><tr><th>Istilah</th><th>Padanan / penjelasan</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>';
 }
 
+// Lembar penilaian diri memakai sudut pandang orang pertama ("Saya"); lembar pengamat tetap "Guru".
+function obSaya_(t) {
+  return String(t == null ? '' : t).replace(/\bGuru\b/g, 'Saya').replace(/\bguru\b/g, 'saya');
+}
 function obRenderForm_() {
   const F = OB.form, I = OB.ins, obs = F.mode === 'obs', rec = F.rec || {};
+  const T = x => obs ? x : obSaya_(x);
   const ck = rec.Checklist || {}, ru = rec.Rubrik || {};
   const jr = (obs ? rec.JurnalA : rec.JurnalB) || {};
   const done = rec.Status === 'Selesai';
@@ -277,7 +282,7 @@ function obRenderForm_() {
   const meta = (l, v) => '<div class="ob-meta-item"><div class="ob-meta-l">' + l + '</div><div class="ob-meta-v">' + (v === '' || v == null ? '-' : v) + '</div></div>';
   const yn = k => '<div class="ob-seg" role="radiogroup">' + ['Ya', 'Tidak'].map(v =>
     '<label class="ob-seg-opt ob-seg-' + v.toLowerCase() + '"><input type="radio" name="ck_' + k + '" value="' + v + '"' + ((ck[k] || {}).v === v ? ' checked' : '') + dis + ' onchange="obToggle_(\'' + k + '\')"><span>' + v + '</span></label>').join('') + '</div>';
-  const butir = (k, t) => '<div class="ob-item" id="obi_' + k + '"><div class="ob-item-top"><span class="ob-id">' + k + '</span><div class="ob-q">' + esc(t) + '</div></div>' + yn(k) +
+  const butir = (k, t) => '<div class="ob-item" id="obi_' + k + '"><div class="ob-item-top"><span class="ob-id">' + k + '</span><div class="ob-q">' + esc(T(t)) + '</div></div>' + yn(k) +
     '<div class="ob-bukti" id="obb_' + k + '"><label class="ob-lbl" for="bk_' + k + '">Bukti singkat <span class="ob-req">wajib bila Ya</span></label>' +
     '<input class="form-control" id="bk_' + k + '" placeholder="Apa yang dilakukan, untuk kelompok mana, pada bagian pembelajaran mana" value="' + esc((ck[k] || {}).bukti || '') + '"' + dis + '></div></div>';
   const area = (lbl, idAttr, val, rows, num) => '<div class="ob-field"><label class="ob-lbl ob-lbl-lg" for="' + idAttr + '">' + (num ? '<span class="ob-num">' + num + '</span>' : '') + lbl + '</label><textarea class="form-control" rows="' + rows + '" id="' + idAttr + '"' + dis + '>' + esc(val) + '</textarea></div>';
@@ -294,8 +299,8 @@ function obRenderForm_() {
   h += sec('KESESUAIAN DENGAN MODUL AJAR') + I.kesesuaian.map(m => butir(m.id, m.teks)).join('');
   h += sec('RUBRIK PENILAIAN <small>pilih satu skor 1–4 pada setiap rubrik</small>') + I.rubrik.map(r => {
     const sk = (ru[r.id] || {}).skor;
-    return '<div class="ob-item ob-rub"><div class="ob-item-top"><span class="ob-id">' + r.id + '</span><div class="ob-q"><b>' + esc(r.judul) + '</b></div></div><div class="ob-opts">' +
-      [1, 2, 3, 4].map(n => '<label class="ob-opt"><input type="radio" class="ob-radio" name="ru_' + r.id + '" value="' + n + '"' + (String(sk) === String(n) ? ' checked' : '') + dis + ' onchange="obProgress_()"><span class="ob-box"></span><span class="ob-score">' + n + '</span><span class="ob-desc">' + esc(r.deskriptor[n]) + '</span></label>').join('') + '</div>' +
+    return '<div class="ob-item ob-rub"><div class="ob-item-top"><span class="ob-id">' + r.id + '</span><div class="ob-q"><b>' + esc(T(r.judul)) + '</b></div></div><div class="ob-opts">' +
+      [1, 2, 3, 4].map(n => '<label class="ob-opt"><input type="radio" class="ob-radio" name="ru_' + r.id + '" value="' + n + '"' + (String(sk) === String(n) ? ' checked' : '') + dis + ' onchange="obProgress_()"><span class="ob-box"></span><span class="ob-score">' + n + '</span><span class="ob-desc">' + esc(T(r.deskriptor[n])) + '</span></label>').join('') + '</div>' +
       '<div class="ob-bukti" style="display:block"><label class="ob-lbl" for="ra_' + r.id + '">Alasan singkat</label><input class="form-control" id="ra_' + r.id + '" placeholder="Mengapa skor ini dipilih" value="' + esc((ru[r.id] || {}).alasan || '') + '"' + dis + '></div></div>';
   }).join('');
   if (obs) {
