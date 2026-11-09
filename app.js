@@ -2242,11 +2242,14 @@ function loadAkunSection() {
   showLoading('section-akun');
   gsRun('getDaftarAkun', [], res => {
     const list = res.data || [];
+    const me = AppState.profile || {};
+    const bolehHapus = u => u.Peran !== 'Superadmin' && u.ID !== me.ID && String(u.Email).toLowerCase() !== String(me.Email || '').toLowerCase() && (u.Peran !== 'Admin' || me.Peran === 'Superadmin');
     const rows = list.map(u => `<tr><td>${esc(u.Sapaan ? u.Sapaan + ' ' + u.Nama : u.Nama)}</td><td>${esc(u.Email)}</td><td>${esc(u.Peran)}</td><td>${esc(u.Sekolah)}</td>
       <td><span class="badge-status ${u.Status === 'Aktif' ? 'tervalidasi' : 'draft'}">${esc(u.Status)}</span></td>
       <td class="text-end">
         <button class="btn btn-sm btn-adaptiva-ghost" onclick="ubahPasswordAkunModal('${u.ID}','${esc(u.Nama)}')" title="Ubah Password"><i class="bi bi-key"></i></button>
         <button class="btn btn-sm btn-adaptiva-ghost" onclick="ubahStatusAkunNow('${u.ID}','${u.Status === 'Aktif' ? 'Nonaktif' : 'Aktif'}')">${u.Status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button>
+        ${bolehHapus(u) ? `<button class="btn btn-sm btn-adaptiva-ghost text-danger" onclick="hapusAkunModal('${u.ID}','${esc(u.Nama)}')" title="Hapus akun"><i class="bi bi-trash"></i></button>` : ''}
       </td></tr>`).join('');
     document.getElementById('section-akun').innerHTML = `
       <div class="page-eyebrow">Manajemen</div><div class="page-title">Kelola Akun</div>
@@ -2284,6 +2287,18 @@ function daftarkanAkunNow() {
 }
 function ubahStatusAkunNow(id, status) {
   gsRun('ubahStatusAkun', [id, status], res => { if (res.success) loadAkunSection(); });
+}
+function hapusAkunModal(id, nama) {
+  openModal('Hapus Akun', `
+    <p>Hapus akun <strong>${nama}</strong> secara permanen?</p>
+    <p class="text-muted small mb-0">Akun ini tidak akan bisa masuk lagi dan tidak dapat dikembalikan. Data kerja milik pengguna (kelas, asesmen, modul) tidak ikut terhapus. Bila hanya ingin menutup akses sementara, gunakan <em>Nonaktifkan</em>.</p>`,
+    `<button class="btn btn-adaptiva-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-danger" onclick="hapusAkunNow('${id}')">Ya, Hapus</button>`);
+}
+function hapusAkunNow(id) {
+  gsRun('hapusAkun', [id], res => {
+    if (res.success) { showToast('Berhasil', 'Akun dihapus.', 'success'); closeModal(); loadAkunSection(); }
+    else showToast('Gagal', res.message, 'danger');
+  });
 }
 function ubahPasswordAkunModal(id, nama) {
   openModal('Ubah Password — ' + nama, `

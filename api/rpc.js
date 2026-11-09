@@ -70,6 +70,27 @@ async function ubahStatusAkun(sessionToken, [id, status]) {
   return ok(rec);
 }
 
+// Hapus permanen sebuah akun dari daftar pengguna. Pengaman:
+// - tidak bisa menghapus akun sendiri,
+// - akun Superadmin tidak bisa dihapus lewat aplikasi,
+// - akun Admin hanya bisa dihapus oleh Superadmin.
+// Data kerja milik guru (kelas, asesmen, modul) tidak ikut terhapus.
+async function hapusAkun(sessionToken, [id]) {
+  const user = await auth.requireRole(sessionToken, [auth.ROLE.SUPERADMIN, auth.ROLE.ADMIN]);
+  const existing = await sheets.findOne('Users', 'ID', id);
+  if (!existing) return fail('Akun tidak ditemukan.');
+  if (existing.ID === user.ID || String(existing.Email).toLowerCase() === String(user.Email).toLowerCase()) {
+    return fail('Anda tidak dapat menghapus akun Anda sendiri.');
+  }
+  if (existing.Peran === auth.ROLE.SUPERADMIN) return fail('Akun Superadmin tidak dapat dihapus.');
+  if (existing.Peran === auth.ROLE.ADMIN && user.Peran !== auth.ROLE.SUPERADMIN) {
+    return fail('Hanya Superadmin yang dapat menghapus akun Admin.');
+  }
+  const berhasil = await sheets.deleteRecord('Users', id);
+  if (!berhasil) return fail('Akun gagal dihapus.');
+  return ok(true, 'Akun dihapus.');
+}
+
 // ── Master Data: Kelas & Siswa ──
 async function getKelasSaya(sessionToken) {
   const user = await auth.requireRole(sessionToken, null);
@@ -125,7 +146,7 @@ const FN_REGISTRY = {
   loginWithGoogle: async (token, [idToken]) => auth.loginWithGoogle(idToken),
   getCurrentUserProfile: async (token) => auth.getCurrentUserProfile(token),
   setPeranPreview: async (token, [roleBaru]) => ok(await auth.setPeranPreview(token, roleBaru)),
-  daftarkanAkun, getDaftarAkun, ubahStatusAkun, getDaftarValidator,
+  daftarkanAkun, getDaftarAkun, ubahStatusAkun, hapusAkun, getDaftarValidator,
   getKelasSaya, simpanKelas, hapusKelas,
   getSiswaByKelas, simpanSiswa, hapusSiswa,
   buatAsesmen: asesmen.buatAsesmen,
