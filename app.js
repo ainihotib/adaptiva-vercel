@@ -2256,7 +2256,7 @@ function loadAkunSection() {
       </td></tr>`).join('');
     document.getElementById('section-akun').innerHTML = `
       <div class="page-eyebrow">Manajemen</div><div class="page-title">Kelola Akun</div>
-      <div class="page-subtitle">Daftarkan akun email + password untuk Guru dan Kepala Sekolah/Pengawas (maksimal 100 guru).</div>
+      <div class="page-subtitle">Daftarkan akun email + password untuk Guru dan Kepala Sekolah/Pengawas (maksimal 300 guru).</div>
       <button class="btn btn-adaptiva-primary mb-3" onclick="daftarkanAkunModal()"><i class="bi bi-person-plus"></i> Daftarkan Akun</button>
       <div class="table-responsive"><table class="table"><thead><tr><th>Nama</th><th>Email</th><th>Peran</th><th>Sekolah</th><th>Status</th><th></th></tr></thead>
       <tbody>${rows || '<tr><td colspan="6" class="text-center text-muted py-3">Belum ada akun.</td></tr>'}</tbody></table></div>`;

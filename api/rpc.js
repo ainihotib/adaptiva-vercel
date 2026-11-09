@@ -21,6 +21,9 @@ const dashboard = require('../lib/dashboard');
 const observasi = require('../lib/observasi');
 const { randomUUID } = require('crypto');
 
+// Batas jumlah guru terdaftar. Naikkan hanya setelah memastikan performa Google Sheets masih memadai.
+const MAKS_GURU = 300;
+
 function ok(data, message) { return { success: true, data, message: message || 'OK' }; }
 function fail(message) { return { success: false, data: null, message }; }
 
@@ -34,7 +37,7 @@ async function daftarkanAkun(sessionToken, [email, nama, peran, sekolah, sapaan]
   if (existing) return fail('Email sudah terdaftar.');
   if (peran === auth.ROLE.GURU) {
     const totalGuru = (await sheets.findMany('Users', 'Peran', auth.ROLE.GURU)).length;
-    if (totalGuru >= 100) return fail('Batas maksimal 100 guru terdaftar sudah tercapai.');
+    if (totalGuru >= MAKS_GURU) return fail('Batas maksimal ' + MAKS_GURU + ' guru terdaftar sudah tercapai.');
   }
   const rec = await sheets.addRecord('Users', {
     ID: randomUUID(), Email: email, Nama: nama, Peran: peran, Sekolah: sekolah,
@@ -124,7 +127,7 @@ async function ubahAkun(sessionToken, [id, data]) {
     if ([auth.ROLE.GURU, auth.ROLE.KEPSEK, auth.ROLE.ADMIN].indexOf(peran) === -1) return fail('Peran tidak dikenal.');
     if (peran === auth.ROLE.GURU) {
       const totalGuru = (await sheets.findMany('Users', 'Peran', auth.ROLE.GURU)).length;
-      if (totalGuru >= 100) return fail('Batas maksimal 100 guru terdaftar sudah tercapai.');
+      if (totalGuru >= MAKS_GURU) return fail('Batas maksimal ' + MAKS_GURU + ' guru terdaftar sudah tercapai.');
     }
   }
   if (emailBerubah) {
