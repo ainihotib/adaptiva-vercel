@@ -188,7 +188,7 @@ function obRenderJurnal_(j) {
     [1, 2, 3].map(c => '<div class="col-md-4"><label class="ob-lbl">' + esc(hd[c]) + '</label>' + (langkah && c === 1
       ? '<select class="form-select form-select-sm" id="' + tid + '_' + i + '_1"><option value="">— Pilih —</option>' + I.jurnalLangkah.map(l => '<option' + (r.c1 === l ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select>'
       : ta(tid + '_' + i + '_' + c, r['c' + c])) + '</div>').join('') + '</div></div>').join('');
-  h += '<h5 class="ob-sec">1. RENCANA DAN PELAKSANAAN PER KELOMPOK</h5><p class="ob-hint">Isi minimal satu kelompok; tiap kotak minimal 10 kata. Kelompok yang tidak ada di kelas Anda boleh dikosongkan.</p>' + kartu(t1, 't1', I.jurnalTabel1, false);
+  h += '<h5 class="ob-sec">1. RENCANA DAN PELAKSANAAN PER KELOMPOK</h5><p class="ob-hint">Isi minimal satu kelompok; kotak rencana dan pelaksanaan minimal 10 kata; "Alasan bila berbeda" boleh singkat atau dikosongkan jika sesuai rencana. Kelompok yang tidak ada di kelas Anda boleh dikosongkan.</p>' + kartu(t1, 't1', I.jurnalTabel1, false);
   h += '<h5 class="ob-sec">2. SCAFFOLDING YANG SAYA BERIKAN</h5><p class="ob-hint">Isi minimal satu kelompok; tiap kotak minimal 10 kata.</p>' + kartu(t2, 't2', I.jurnalTabel2, true);
   h += '<h5 class="ob-sec">3. PERTANYAAN REFLEKSI</h5><p class="ob-hint">Tiap jawaban minimal 10 kata.</p>' + G.pertanyaan.map((t, i) => '<div class="ob-field"><label class="ob-lbl ob-lbl-lg" for="jb_' + i + '"><span class="ob-num">' + (i + 1) + '</span>' + esc(t) + '</label><textarea class="form-control" rows="3" id="jb_' + i + '">' + esc(jb['b' + i] || '') + '</textarea></div>').join('');
   h += '<div class="ob-actions"><button class="btn btn-adaptiva-secondary" onclick="obSimpanJurnal_(\'Draft\')">Simpan draf</button><button class="btn btn-adaptiva-primary" onclick="obSimpanJurnal_(\'Selesai\')">Simpan jurnal</button></div></div>';
@@ -202,7 +202,13 @@ function obSimpanJurnal_(status) {
   ['t1', 't2'].forEach(tid => { o.JurnalB[tid] = []; for (let i = 0; i < 12; i++) { if (!g(tid + '_' + i + '_0')) break; const r = {}; for (let c = 0; c < 4; c++) r['c' + c] = g(tid + '_' + i + '_' + c).value.trim(); o.JurnalB[tid].push(r); } });
   if (!o.Tanggal || !o.KelasID) { showToast('Peringatan', 'Tanggal pelaksanaan dan kelas wajib diisi.', 'warning'); return; }
   gsRun('simpanJurnal', [o], res => {
-    if (!res.success) { showToast('Gagal', res.message, 'danger'); return; }
+    if (!res.success) {
+      showToast('Belum bisa disimpan', res.message, 'danger');
+      let kt = document.getElementById('jrPesan');
+      if (!kt) { kt = document.createElement('div'); kt.id = 'jrPesan'; kt.className = 'alert alert-danger'; kt.setAttribute('role', 'alert'); const f = document.querySelector('.ob-form .ob-head'); f.parentNode.insertBefore(kt, f.nextSibling); }
+      kt.innerHTML = '<b>Jurnal belum dapat disimpan.</b><br>' + esc(res.message).replace(/; /g, '<br>• ').replace(/^(.*?:)/, '$1<br>• ');
+      window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+    }
     showToast('Berhasil', res.message, 'success'); loadObservasi();
   });
 }
