@@ -616,3 +616,5 @@ textarea.form-control { height:auto; }
   .ob-seg { display: flex; } .ob-seg-opt { flex: 1; } .ob-seg-opt span { display: block; min-width: 0; }
   .ob-actions .btn { flex: 1; }
 }
+.ob-kel { border: 1.5px solid var(--border-color); border-radius: 12px; background: var(--surface-2, var(--surface)); padding: 14px 16px; }
+.ob-kel .form-control, .ob-kel .form-select { font-size: 14.5px; }

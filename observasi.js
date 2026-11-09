@@ -178,9 +178,19 @@ function obRenderJurnal_(j) {
     '<div class="col-md-4">' + fld('Tanggal pelaksanaan', '<input type="date" class="form-control" id="jrTgl" max="' + esc(G.hariIni) + '" value="' + esc(j.Tanggal) + '">') + '</div>' +
     '<div class="col-md-5">' + fld('Kelas', '<select class="form-select" id="jrKelas">' + kelasOpt + '</select>') + '</div>' +
     '<div class="col-md-3">' + fld('Pertemuan ke-', '<input type="number" min="1" class="form-control" id="jrKe" value="' + esc(j.PertemuanKe) + '" placeholder="otomatis">', 'Kosongkan agar dihitung otomatis.') + '</div></div>' +
-    fld('Materi pembelajaran', '<input class="form-control" id="jrMateri" value="' + esc(j.Materi) + '" placeholder="Contoh: Siklus air">') +
+    fld('Materi dan TP', '<input class="form-control" id="jrMateri" value="' + esc(j.Materi) + '" placeholder="Contoh: Siklus air — TP: menjelaskan tahapan siklus air">') +
     fld('Catatan selama pelaksanaan pembelajaran', '<textarea class="form-control" rows="5" id="jrCatatan" placeholder="Tuliskan apa yang terjadi selama pembelajaran">' + esc(j.CatatanPelaksanaan) + '</textarea>', 'Opsional. Misalnya kejadian penting, kendala, respons siswa, atau perubahan dari rencana.');
-  h += '<h5 class="ob-sec">REFLEKSI GURU</h5>' + G.pertanyaan.map((t, i) => '<div class="ob-field"><label class="ob-lbl ob-lbl-lg" for="jb_' + i + '"><span class="ob-num">' + (i + 1) + '</span>' + esc(t) + '</label><textarea class="form-control" rows="3" id="jb_' + i + '">' + esc(jb['b' + i] || '') + '</textarea></div>').join('');
+  const I = OB.ins, KEL = I.jurnalKelompok;
+  const ta = (id, v, ph) => '<textarea class="form-control form-control-sm" rows="3" id="' + id + '" placeholder="' + esc(ph || '') + '">' + esc(v) + '</textarea>';
+  const t1 = (jb.t1 && jb.t1.length ? jb.t1 : KEL.map(k => ({ c0: k })));
+  const t2 = (jb.t2 && jb.t2.length ? jb.t2 : KEL.map(k => ({ c0: k })));
+  const kartu = (rows, tid, hd, langkah) => rows.map((r, i) => '<div class="ob-kel mb-3"><div class="fw-bold mb-2">Kelompok: <input class="form-control form-control-sm d-inline-block w-auto" id="' + tid + '_' + i + '_0" value="' + esc(r.c0) + '"></div><div class="row g-2">' +
+    [1, 2, 3].map(c => '<div class="col-md-4"><label class="ob-lbl">' + esc(hd[c]) + '</label>' + (langkah && c === 1
+      ? '<select class="form-select form-select-sm" id="' + tid + '_' + i + '_1"><option value="">— Pilih —</option>' + I.jurnalLangkah.map(l => '<option' + (r.c1 === l ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select>'
+      : ta(tid + '_' + i + '_' + c, r['c' + c])) + '</div>').join('') + '</div></div>').join('');
+  h += '<h5 class="ob-sec">1. RENCANA DAN PELAKSANAAN PER KELOMPOK</h5>' + kartu(t1, 't1', I.jurnalTabel1, false);
+  h += '<h5 class="ob-sec">2. SCAFFOLDING YANG SAYA BERIKAN</h5>' + kartu(t2, 't2', I.jurnalTabel2, true);
+  h += '<h5 class="ob-sec">3. PERTANYAAN REFLEKSI</h5>' + G.pertanyaan.map((t, i) => '<div class="ob-field"><label class="ob-lbl ob-lbl-lg" for="jb_' + i + '"><span class="ob-num">' + (i + 1) + '</span>' + esc(t) + '</label><textarea class="form-control" rows="3" id="jb_' + i + '">' + esc(jb['b' + i] || '') + '</textarea></div>').join('');
   h += '<div class="ob-actions"><button class="btn btn-adaptiva-secondary" onclick="obSimpanJurnal_(\'Draft\')">Simpan draf</button><button class="btn btn-adaptiva-primary" onclick="obSimpanJurnal_(\'Selesai\')">Simpan jurnal</button></div></div>';
   OB.jurnalId = j.ID || '';
   obSec_().innerHTML = h;
@@ -189,6 +199,7 @@ function obRenderJurnal_(j) {
 function obSimpanJurnal_(status) {
   const g = x => document.getElementById(x), o = { ID: OB.jurnalId, Status: status, Tanggal: g('jrTgl').value, KelasID: g('jrKelas').value, PertemuanKe: g('jrKe').value, Materi: g('jrMateri').value.trim(), CatatanPelaksanaan: g('jrCatatan').value.trim(), JurnalB: {} };
   OB.ins.pertanyaanRefleksiGuru.forEach((t, i) => { o.JurnalB['b' + i] = g('jb_' + i).value.trim(); });
+  ['t1', 't2'].forEach(tid => { o.JurnalB[tid] = []; for (let i = 0; i < 12; i++) { if (!g(tid + '_' + i + '_0')) break; const r = {}; for (let c = 0; c < 4; c++) r['c' + c] = g(tid + '_' + i + '_' + c).value.trim(); o.JurnalB[tid].push(r); } });
   if (!o.Tanggal || !o.KelasID) { showToast('Peringatan', 'Tanggal pelaksanaan dan kelas wajib diisi.', 'warning'); return; }
   gsRun('simpanJurnal', [o], res => {
     if (!res.success) { showToast('Gagal', res.message, 'danger'); return; }
