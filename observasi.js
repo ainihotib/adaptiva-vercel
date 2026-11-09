@@ -15,7 +15,7 @@ function obBadge_(s) {
 }
 
 function loadObservasi() {
-  OB.role = AppState.profile.Peran;
+  OB.role = AppState.profile.Peran; OB.lihat = false;
   const sec = obSec_();
   sec.innerHTML = '<div class="card"><div class="text-center py-4"><div class="spinner-border text-primary"></div></div></div>';
   const lanjut = () => {
@@ -38,11 +38,11 @@ function obUnduhLembar_() {
 /* ───────── Kepala Sekolah / Pengawas / Admin ───────── */
 function obStaffHome_() {
   const admin = OB.role === 'Admin' || OB.role === 'Superadmin';
-  const tabs = [['jadwal', 'Jadwal Observasi'], ['target', 'Target 20%']].concat(admin ? [['rekap', 'Rekap (Admin)']] : []);
+  const tabs = [['jadwal', 'Jadwal Observasi'], ['target', 'Target 20%']].concat(admin ? [['rekap', 'Rekap (Admin)']] : []).concat(AppState.profile.PeranAsli === 'Superadmin' ? [['jurnalguru', 'Jurnal Guru (lihat)']] : []);
   const nav = tabs.map(t => '<li class="nav-item"><a class="nav-link ' + (OB.tab === t[0] ? 'active' : '') + '" href="javascript:void(0)" onclick="OB.tab=\'' + t[0] + '\';obStaffHome_()">' + t[1] + '</a></li>').join('');
   obSec_().innerHTML = '<div class="card"><div class="card-header-flex"><h4 class="mb-0">Observasi Kelas &amp; Jurnal</h4>' + obUnduhLembar_() + '</div>' +
     '<ul class="nav nav-tabs mb-3">' + nav + '</ul><div id="obBody"></div></div>';
-  if (OB.tab === 'target') obTarget_(); else if (OB.tab === 'rekap') obRekap_(); else obJadwal_();
+  if (OB.tab === 'target') obTarget_(); else if (OB.tab === 'rekap') obRekap_(); else if (OB.tab === 'jurnalguru') obJurnalGuru_(); else obJadwal_();
 }
 
 function obJadwal_() {
@@ -135,6 +135,45 @@ function obRekap_() {
   });
 }
 
+/* ───────── Superadmin: lihat jurnal & penilaian diri guru (hanya baca) ───────── */
+function obJurnalGuru_() {
+  const b = document.getElementById('obBody'); b.innerHTML = '<div class="text-muted">Memuat daftar guru…</div>';
+  gsRun('getDaftarGuruLihat', [], res => {
+    if (!res.success) { b.innerHTML = '<div class="text-danger">' + esc(res.message) + '</div>'; return; }
+    OB.daftarGuru = res.data;
+    const opt = '<option value="">— Pilih guru —</option>' + res.data.map(g => '<option value="' + esc(g.Email) + '"' + (g.Email === OB.lihatEmail ? ' selected' : '') + '>' + esc(g.Nama) + (g.Sekolah ? ' · ' + esc(g.Sekolah) : '') + ' (jurnal selesai ' + g.JurnalSelesai + (g.JurnalDraft ? ', draf ' + g.JurnalDraft : '') + ')</option>').join('');
+    b.innerHTML = '<div class="alert alert-secondary py-2 small"><i class="bi bi-eye"></i> Tampilan khusus Superadmin, <b>hanya baca</b>: Anda tidak masuk sebagai guru dan tidak dapat mengisi atau mengubah isian guru.</div>' +
+      '<select class="form-select mb-3" id="obLihatGuru">' + opt + '</select><div id="obLihatIsi"></div>';
+    document.getElementById('obLihatGuru').addEventListener('change', e => { OB.lihatEmail = e.target.value; obJurnalGuruIsi_(); });
+    if (OB.lihatEmail) obJurnalGuruIsi_();
+  });
+}
+function obJurnalGuruIsi_() {
+  const box = document.getElementById('obLihatIsi');
+  if (!OB.lihatEmail) { box.innerHTML = ''; return; }
+  box.innerHTML = '<div class="text-muted">Memuat…</div>';
+  gsRun('getJurnalSaya', [OB.lihatEmail], res => {
+    if (!res.success) { box.innerHTML = '<div class="text-danger">' + esc(res.message) + '</div>'; return; }
+    const d = res.data; OB.gj = d;
+    const rows = d.jurnal.map(j => '<tr><td>' + esc(j.Tanggal) + '</td><td>' + esc(j.KelasNama) + '</td><td>' + esc(j.PertemuanKe) + '</td><td>' + esc(j.Materi) + (j.Diobservasi ? '<div class="small text-muted"><i class="bi bi-eye"></i> Diobservasi: ' + esc(j.Diobservasi) + '</div>' : '') + '</td><td>' + obBadge_(j.Status) + '</td><td>' + obBadge_(j.DiriStatus) + '</td>' +
+      '<td class="text-end text-nowrap"><button class="btn btn-sm btn-adaptiva-secondary me-1" onclick="obLihatJurnal_(\'' + j.ID + '\')">Lihat jurnal</button>' +
+      (j.DiriStatus !== 'Belum' ? '<button class="btn btn-sm btn-adaptiva-secondary" onclick="obLihatDiri_(\'' + j.ID + '\')">Lihat penilaian diri</button>' : '') + '</td></tr>').join('');
+    box.innerHTML = '<h6>' + esc(d.guruNama) + ' <small class="text-muted">· jurnal selesai ' + d.jurnalSelesai + '</small></h6>' +
+      (rows ? '<div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Tanggal</th><th>Kelas</th><th>Ke-</th><th>Materi</th><th>Jurnal</th><th>Penilaian diri</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="text-muted">Guru ini belum mengisi jurnal.</p>');
+  });
+}
+function obLihatJurnal_(id) {
+  gsRun('getJurnal', [id, OB.lihatEmail], res => { if (!res.success) { showToast('Gagal', res.message, 'danger'); return; } OB.lihat = true; obRenderJurnal_(res.data); });
+}
+function obLihatDiri_(jurnalId) {
+  gsRun('getPenilaianDiri', [jurnalId, OB.lihatEmail], res => {
+    if (!res.success) { showToast('Belum ada', res.message, 'warning'); return; }
+    OB.lihat = true;
+    OB.form = { mode: 'diri', jurnalId: jurnalId, jadwal: {}, bantu: res.data.bantu, rec: res.data.penilaianDiri, umpan: res.data.umpanBalik };
+    try { obRenderForm_(); } catch (e) { showToast('Formulir tidak dapat ditampilkan', (e && e.message) || String(e), 'danger'); }
+  });
+}
+
 /* ───────── Guru ───────── */
 function obGuruHome_() {
   const sec = obSec_();
@@ -188,7 +227,15 @@ function obRenderJurnal_(j) {
   obSec_().innerHTML = h;
   document.getElementById('jrKelas').addEventListener('change', () => obTabelJurnal_(true));
   obTabelJurnal_(false);
+  if (OB.lihat) obHanyaBaca_();
   window.scrollTo(0, 0);
+}
+function obHanyaBaca_() {
+  const f = document.querySelector('.ob-form'); if (!f) return;
+  f.querySelectorAll('input, textarea, select').forEach(el => { el.disabled = true; });
+  f.querySelectorAll('.ob-actions').forEach(el => el.remove());
+  const n = document.createElement('div'); n.className = 'alert alert-secondary py-2 small'; n.innerHTML = '<i class="bi bi-eye"></i> Tampilan Superadmin, hanya baca.';
+  const hd = f.querySelector('.ob-head'); hd.parentNode.insertBefore(n, hd.nextSibling);
 }
 // Tabel 1 & 2 hanya menampilkan kelompok yang aktif (beranggota) menurut hasil asesmen kelas terpilih.
 function obBacaTabel_() {
@@ -274,7 +321,7 @@ function obRenderForm_() {
   const T = x => obs ? x : obSaya_(x);
   const ck = rec.Checklist || {}, ru = rec.Rubrik || {};
   const jr = (obs ? rec.JurnalA : rec.JurnalB) || {};
-  const done = rec.Status === 'Selesai';
+  const done = rec.Status === 'Selesai' || !!OB.lihat;
   const id = F.bantu.identitas;
   const dis = done ? ' disabled' : '';
   const kel = Object.keys(F.bantu.jumlahKelompok || {}).map(k => esc(k) + ' (' + F.bantu.jumlahKelompok[k] + ')').join(', ') || '-';
@@ -293,7 +340,7 @@ function obRenderForm_() {
     meta('Materi', esc(id.materi)) + meta('Siswa terdaftar', esc(id.jumlahSiswaTerdaftar != null ? id.jumlahSiswaTerdaftar : F.bantu.jumlahSiswaTerdaftar)) + meta('Kelompok', kel) + meta('Gaya belajar', gaya) + '</div>';
   h += obPetunjuk_(obs);
   h += '<div class="ob-progress" id="obProg"><div class="ob-progress-txt" id="obProgTxt"></div><div class="ob-progress-bar"><div id="obProgBar"></div></div></div>';
-  if (done) h += '<div class="alert alert-success py-2">Sudah diselesaikan — hanya dapat dilihat.</div>';
+  if (OB.lihat) h += '<div class="alert alert-secondary py-2"><i class="bi bi-eye"></i> Tampilan Superadmin, hanya baca' + (rec.Status && rec.Status !== 'Selesai' ? ' (penilaian diri masih draf)' : '') + '.</div>'; else if (done) h += '<div class="alert alert-success py-2">Sudah diselesaikan — hanya dapat dilihat.</div>';
   let last = '';
   I.checklist.forEach(c => { if (c.dim !== last) { h += sec(esc(c.dim)); last = c.dim; } h += butir(c.id, c.teks); });
   h += sec('KESESUAIAN DENGAN MODUL AJAR') + I.kesesuaian.map(m => butir(m.id, m.teks)).join('');

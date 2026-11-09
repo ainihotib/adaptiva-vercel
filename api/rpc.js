@@ -272,6 +272,7 @@ const FN_REGISTRY = {
   getObservasi: observasi.getObservasi,
   simpanObservasi: observasi.simpanObservasi,
   getJurnalSaya: observasi.getJurnalSaya,
+  getDaftarGuruLihat: observasi.getDaftarGuruLihat,
   getJurnal: observasi.getJurnal,
   simpanJurnal: observasi.simpanJurnal,
   getPenilaianDiri: observasi.getPenilaianDiri,
