@@ -211,6 +211,28 @@ async function hapusSiswa(sessionToken, [id]) {
 }
 
 // ── Pendaftaran fungsi yang bisa dipanggil dari frontend lewat fnName ──
+// ── Pengaturan (AppConfig) ──
+// Kunci yang boleh diubah lewat menu Pengaturan; API key hanya Superadmin.
+const KUNCI_CONFIG = ['geminiApiKey', 'wajibValidasiModulAjar'];
+async function getAllConfig(sessionToken) {
+  const user = await auth.requireRole(sessionToken, [auth.ROLE.SUPERADMIN, auth.ROLE.ADMIN]);
+  const peranAsli = user.PeranAsli || user.Peran;
+  const out = {};
+  (await sheets.getAllData('AppConfig')).forEach(r => { if (r.Key && KUNCI_CONFIG.indexOf(r.Key) !== -1) out[r.Key] = r.Value; });
+  if (out.wajibValidasiModulAjar !== undefined) out.wajibValidasiModulAjar = String(out.wajibValidasiModulAjar).toLowerCase() === 'true' ? 'true' : 'false'; // Sheets dapat mengubah 'true' menjadi TRUE
+  if (peranAsli !== auth.ROLE.SUPERADMIN) delete out.geminiApiKey;
+  return ok(out);
+}
+async function setConfig(sessionToken, [key, value]) {
+  const user = await auth.requireRole(sessionToken, [auth.ROLE.SUPERADMIN, auth.ROLE.ADMIN]);
+  if (KUNCI_CONFIG.indexOf(key) === -1) return fail('Pengaturan "' + key + '" tidak dikenali.');
+  if (key === 'geminiApiKey' && (user.PeranAsli || user.Peran) !== auth.ROLE.SUPERADMIN) return fail('Hanya Superadmin yang dapat mengubah API Key.');
+  let v = String(value == null ? '' : value).trim();
+  if (key === 'wajibValidasiModulAjar') v = v === 'true' ? 'true' : 'false';
+  await sheets.setConfig(key, v);
+  return ok(true, 'Tersimpan.');
+}
+
 const FN_REGISTRY = {
   loginWithGoogle: async (token, [idToken]) => auth.loginWithGoogle(idToken),
   getCurrentUserProfile: async (token) => auth.getCurrentUserProfile(token),
@@ -273,6 +295,8 @@ const FN_REGISTRY = {
   simpanObservasi: observasi.simpanObservasi,
   getJurnalSaya: observasi.getJurnalSaya,
   getDaftarGuruLihat: observasi.getDaftarGuruLihat,
+  getAllConfig,
+  setConfig,
   getJurnal: observasi.getJurnal,
   simpanJurnal: observasi.simpanJurnal,
   getPenilaianDiri: observasi.getPenilaianDiri,
