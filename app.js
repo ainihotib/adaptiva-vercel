@@ -841,7 +841,7 @@ function renderChart(canvasId, dataObj, type) {
   const textColor = isDark ? '#E9EEF3' : '#181C1F';
   const gridColor = isDark ? 'rgba(255,255,255,.08)' : 'rgba(15,41,66,.08)';
 
-  if (!labels.length) {
+  if (!labels.length || !values.some(v => Number(v) > 0)) {
     ctx.parentElement.insertAdjacentHTML('beforeend', '<p class="text-muted small text-center mt-4 chart-empty-note">Belum ada data asesmen.</p>');
     return;
   }
