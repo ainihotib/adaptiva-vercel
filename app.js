@@ -426,6 +426,35 @@ function renderUserChip() {
   document.getElementById('userNama').textContent = p.Nama;
   document.getElementById('userPeran').textContent = p.Peran + (p.Sekolah ? ' • ' + p.Sekolah : '');
   renderRoleSwitcher();
+  renderLihatBanner();
+}
+
+// ── Mode "Lihat Sebagai" (Superadmin melihat akun Guru/Kepala, hanya baca) ──
+function renderLihatBanner() {
+  let b = document.getElementById('lihatBanner');
+  const p = AppState.profile || {};
+  if (!p.LihatSebagai) { if (b) b.remove(); document.body.style.paddingTop = ''; return; }
+  if (!b) { b = document.createElement('div'); b.id = 'lihatBanner'; document.body.appendChild(b); }
+  b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:3000;background:#b45309;color:#fff;padding:8px 14px;font-size:.85rem;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;';
+  b.innerHTML = '<span><i class="bi bi-eye"></i> Mode lihat (hanya baca): <b>' + esc(p.Nama) + '</b> · ' + esc(p.Peran) + (p.Sekolah ? ' · ' + esc(p.Sekolah) : '') + '</span>' +
+    '<button type="button" class="btn btn-sm btn-light" onclick="keluarLihatSebagai()">Kembali ke Superadmin</button>';
+  document.body.style.paddingTop = '44px';
+}
+
+function lihatSebagai(email) {
+  gsRun('mulaiLihatSebagai', [email], res => {
+    if (!res.success) { showToast('Gagal', res.message, 'danger'); return; }
+    try { sessionStorage.setItem('adaptiva_session', res.data.sessionToken); sessionStorage.setItem('adaptiva_section', 'dashboard'); } catch (e) {}
+    location.reload();
+  });
+}
+
+function keluarLihatSebagai() {
+  gsRun('akhiriLihatSebagai', [], res => {
+    if (!res.success) { showToast('Gagal', res.message, 'danger'); return; }
+    try { sessionStorage.setItem('adaptiva_session', res.data.sessionToken); sessionStorage.setItem('adaptiva_section', 'akun'); } catch (e) {}
+    location.reload();
+  });
 }
 
 // Widget "Ganti Tampilan Role" — hanya muncul untuk akun Superadmin ASLI
@@ -2250,6 +2279,7 @@ function loadAkunSection() {
     const rows = list.map(u => `<tr><td>${esc(u.Sapaan ? u.Sapaan + ' ' + u.Nama : u.Nama)}</td><td>${esc(u.Email)}</td><td>${esc(u.Peran)}</td><td>${esc(u.Sekolah)}</td>
       <td><span class="badge-status ${u.Status === 'Aktif' ? 'tervalidasi' : 'draft'}">${esc(u.Status)}</span></td>
       <td class="text-end">
+        ${me.PeranAsli === 'Superadmin' && !me.LihatSebagai && (u.Peran === 'Guru' || u.Peran === 'KepalaSekolah') ? `<button class="btn btn-sm btn-adaptiva-ghost" onclick="lihatSebagai('${esc(u.Email)}')" title="Lihat sebagai akun ini (hanya baca)"><i class="bi bi-eye"></i> Lihat</button>` : ''}
         <button class="btn btn-sm btn-adaptiva-ghost" onclick="ubahPasswordAkunModal('${u.ID}','${esc(u.Nama)}')" title="Ubah Password"><i class="bi bi-key"></i></button>
         <button class="btn btn-sm btn-adaptiva-ghost" onclick="ubahStatusAkunNow('${u.ID}','${u.Status === 'Aktif' ? 'Nonaktif' : 'Aktif'}')">${u.Status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button>
         ${bolehUbah(u) ? `<button class="btn btn-sm btn-adaptiva-ghost" onclick="ubahAkunModal('${u.ID}')" title="Edit akun"><i class="bi bi-pencil-square"></i></button>` : ''}

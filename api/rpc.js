@@ -236,6 +236,8 @@ async function setConfig(sessionToken, [key, value]) {
 const FN_REGISTRY = {
   loginWithGoogle: async (token, [idToken]) => auth.loginWithGoogle(idToken),
   getCurrentUserProfile: async (token) => auth.getCurrentUserProfile(token),
+  mulaiLihatSebagai: async (token, [email]) => ok(await auth.mulaiLihatSebagai(token, email)),
+  akhiriLihatSebagai: async (token) => ok(await auth.akhiriLihatSebagai(token)),
   setPeranPreview: async (token, [roleBaru]) => ok(await auth.setPeranPreview(token, roleBaru)),
   daftarkanAkun, getDaftarAkun, ubahStatusAkun, hapusAkun, ubahAkun, getDaftarValidator,
   getKelasSaya, simpanKelas, hapusKelas,
@@ -304,6 +306,18 @@ const FN_REGISTRY = {
   getRekapObservasi: observasi.getRekapObservasi
 };
 
+// Mode "Lihat Sebagai" (Superadmin melihat akun Guru/Kepala): hanya fungsi
+// baca berikut yang boleh dipanggil; selainnya ditolak agar data guru tidak berubah.
+const FN_BACA_SAJA = new Set([
+  'getCurrentUserProfile', 'akhiriLihatSebagai', 'getKelasSaya', 'getSiswaByKelas',
+  'getAsesmenByKelas', 'getSoalByAsesmen', 'getHasilAsesmen', 'getAllProfilSiswa',
+  'getKelompokBelajar', 'getCPTPByKelas', 'getRekomendasiDiferensiasi', 'getDiferensiasiByKelas',
+  'getScaffoldingByKelas', 'getModulAjarSaya', 'getModulAjarDetail', 'getModulUntukValidasi',
+  'getDashboardData', 'getLaporanData', 'getInstrumenObservasi', 'getGuruObservasi',
+  'getJadwalObservasi', 'getObservasi', 'getJurnalSaya', 'getJurnal', 'getPenilaianDiri',
+  'getRekapObservasi', 'getDaftarValidator', 'getMateriBankKognitif', 'getBankCPTP', 'getPublicFormLink'
+]);
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -324,6 +338,9 @@ module.exports = async (req, res) => {
     const fn = FN_REGISTRY[fnName];
     if (!fn) { res.status(200).json(fail('Fungsi "' + fnName + '" belum tersedia di backend Vercel (masih proses migrasi bertahap).')); return; }
 
+    if (auth.resolveViewAs(sessionToken) && !FN_BACA_SAJA.has(fnName)) {
+      res.status(200).json(fail('Mode Lihat Sebagai: hanya baca. Klik "Kembali ke Superadmin" untuk mengubah data.')); return;
+    }
     const result = await fn(sessionToken, argsArray);
     res.status(200).json(result);
   } catch (err) {
